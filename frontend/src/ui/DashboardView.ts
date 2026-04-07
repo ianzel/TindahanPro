@@ -1,61 +1,65 @@
 import { ReportService } from "../services/ReportService.js";
 
-export function renderDashboard(root: HTMLElement): void {
-  const summary = ReportService.todaySummary();
-  const lowStock = ReportService.lowStockItems();
+export async function renderDashboard(root: HTMLElement): Promise<void> {
+  const summary = await ReportService.todaySummary();
+  const lowStock = await ReportService.lowStockItems();
+  const best = await ReportService.bestSellingProducts();
 
   root.innerHTML = `
-    <section class="card">
-      <h2>Dashboard</h2>
-      <p>Welcome to TindahanPro.</p>
-    </section>
+    <div class="card">
+      <h2>Dashboard Overview</h2>
+    </div>
 
-    <section class="grid">
-      <div class="stat">
-        <h3>Total Sales Today</h3>
+    <div class="grid">
+      <div class="stat blue">
+        <h3>Total Sales</h3>
         <p>₱${summary.totalSales.toFixed(2)}</p>
       </div>
 
-      <div class="stat">
-        <h3>Total Profit Today</h3>
+      <div class="stat green">
+        <h3>Profit</h3>
         <p>₱${summary.totalProfit.toFixed(2)}</p>
       </div>
 
-      <div class="stat">
+      <div class="stat orange">
         <h3>Transactions</h3>
         <p>${summary.transactions}</p>
       </div>
+    </div>
 
-      <div class="stat">
-        <h3>Low Stock Items</h3>
-        <p>${summary.lowStockCount}</p>
-      </div>
+    <div class="card">
+      <h3>Best Selling Products</h3>
+      <canvas id="salesChart"></canvas>
+    </div>
 
-      <div class="stat">
-        <h3>Inventory Value</h3>
-        <p>₱${summary.inventoryValue.toFixed(2)}</p>
-      </div>
-    </section>
-
-    <section class="card">
-      <h3>Low Stock Alert</h3>
+    <div class="card">
+      <h3>Low Stock</h3>
       ${
         lowStock.length === 0
-          ? `<p>No low-stock items.</p>`
-          : `
-            <ul>
-              ${lowStock
-                .map(
-                  (product) => `
-                    <li>
-                      ${product.name} - Stock: ${product.stock} / Minimum: ${product.minStock}
-                    </li>
-                  `
-                )
-                .join("")}
-            </ul>
-          `
+          ? "<p style='color:green;'>✔ All good</p>"
+          : lowStock.map((p: any) => `
+              <p style="color:red;">⚠ ${p.name} (${p.stock})</p>
+            `).join("")
       }
-    </section>
+    </div>
   `;
+
+  const canvas = document.getElementById("salesChart") as HTMLCanvasElement;
+
+  if (!canvas || !(window as any).Chart) return;
+
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return;
+
+  new (window as any).Chart(ctx, {
+    type: "pie",
+    data: {
+      labels: best.map((b: any) => b.name),
+      datasets: [
+        {
+          data: best.map((b: any) => b.quantity),
+        },
+      ],
+    },
+  });
 }

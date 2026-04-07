@@ -1,64 +1,56 @@
 import { ProductService } from "../services/ProductService.js";
 import { SalesService } from "../services/SalesService.js";
 
-export function renderSales(root: HTMLElement): void {
-  const products = ProductService.list();
+export async function renderSales(root: HTMLElement) {
+  const products = await ProductService.list();
 
   root.innerHTML = `
     <h2>Sales</h2>
 
-    ${
-      products.length === 0
-        ? `<p>⚠ Add products first before recording sales.</p>`
-        : `
-          <form id="sale-form">
-            <label>Select Product</label>
-            <select id="sale-product" required>
-              ${products
-                .map(
-                  (product) =>
-                    `<option value="${product.id}">${product.name} (Stock: ${product.stock})</option>`
-                )
-                .join("")}
-            </select>
-
-            <label>Quantity</label>
-            <input id="sale-qty" type="number" min="1" step="1" required />
-
-            <button type="submit">Record Sale</button>
-          </form>
-
-          <div id="sale-msg" style="margin-top:10px;"></div>
+    <form id="sale-form">
+      <select id="product">
+        ${products
+          .map(
+            (p: any) => `
+          <option value="${p.id}">
+            ${p.name}
+          </option>
         `
-    }
+          )
+          .join("")}
+      </select>
+
+      <input id="qty" type="number" min="1" required />
+
+      <button type="submit">Record</button>
+    </form>
+
+    <div id="msg"></div>
   `;
 
-  const form = document.getElementById("sale-form") as HTMLFormElement | null;
-  const msg = document.getElementById("sale-msg") as HTMLDivElement | null;
+  const form = document.getElementById("sale-form") as HTMLFormElement;
+  const msg = document.getElementById("msg") as HTMLDivElement;
 
-  if (!form || !msg) return;
+  form.onsubmit = async (e) => {
+    e.preventDefault();
 
-  form.onsubmit = (event) => {
-    event.preventDefault();
+    const productId = Number(
+      (document.getElementById("product") as HTMLSelectElement).value
+    );
+
+    const qty = Number(
+      (document.getElementById("qty") as HTMLInputElement).value
+    );
 
     try {
-      const productId = Number(
-        (document.getElementById("sale-product") as HTMLSelectElement).value
-      );
-      const qty = Number(
-        (document.getElementById("sale-qty") as HTMLInputElement).value
-      );
-
-      const sale = SalesService.record(productId, qty);
+      const sale = await SalesService.record(productId, qty);
 
       msg.innerHTML = `
-        <p>✅ Sale recorded!</p>
-        <p>Total: ₱${sale.totalAmount.toFixed(2)} | Profit: ₱${sale.profit.toFixed(2)}</p>
+        <p>✅ Sale recorded</p>
+        <p>Total: ₱${sale.totalAmount}</p>
       `;
-
-      renderSales(root);
     } catch (err) {
-      msg.innerHTML = `<p>❌ ${(err as Error).message}</p>`;
+      msg.innerHTML = `<p>❌ Error</p>`;
     }
   };
 }

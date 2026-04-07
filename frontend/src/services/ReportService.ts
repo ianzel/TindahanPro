@@ -2,52 +2,72 @@ import { ProductService } from "./ProductService.js";
 import { SalesService } from "./SalesService.js";
 
 export class ReportService {
-  static inventoryValue(): number {
-    return ProductService.list().reduce(
-      (sum, product) => sum + Number(product.buyingPrice) * product.stock,
-      0
-    );
+
+  static async lowStockItems() {
+    const products = await ProductService.list();
+    return products.filter((p: any) => p.stock <= p.minStock);
   }
 
-  static lowStockItems() {
-    return ProductService.list().filter(
-      (product) => product.stock <= product.minStock
-    );
-  }
+  static async todaySummary() {
+    const sales = await SalesService.list();
 
-  static todaySummary() {
-    const todayKey = new Date().toDateString();
+    const today = new Date().toDateString();
 
-    const salesToday = SalesService.list().filter(
-      (sale) => new Date(sale.dateISO).toDateString() === todayKey
+    const todaySales = sales.filter(
+      (s: any) =>
+        new Date(s.dateISO).toDateString() === today
     );
 
-    const totalSales = salesToday.reduce(
-      (sum, sale) => sum + Number(sale.totalAmount),
+    const totalSales = todaySales.reduce(
+      (sum: number, s: any) => sum + Number(s.totalAmount),
       0
     );
 
-    const totalProfit = salesToday.reduce(
-      (sum, sale) => sum + Number(sale.profit),
+    const totalProfit = todaySales.reduce(
+      (sum: number, s: any) => sum + Number(s.profit),
       0
     );
 
     return {
       totalSales,
       totalProfit,
-      transactions: salesToday.length,
-      lowStockCount: this.lowStockItems().length,
-      inventoryValue: this.inventoryValue(),
+      transactions: todaySales.length,
     };
   }
 
-  static salesBetween(start: Date, end: Date) {
+  // ✅ FIXED
+  static async salesBetween(start: Date, end: Date) {
+    const sales = await SalesService.list();
+
     const startMs = start.getTime();
     const endMs = end.getTime();
 
-    return SalesService.list().filter((sale) => {
-      const ms = new Date(sale.dateISO).getTime();
+    return sales.filter((s: any) => {
+      const ms = new Date(s.dateISO).getTime();
       return ms >= startMs && ms <= endMs;
     });
+  }
+
+  static async bestSellingProducts(limit: number = 5) {
+    const sales = await SalesService.list();
+
+    const map: Record<number, number> = {};
+
+    sales.forEach((s: any) => {
+      map[s.productId] = (map[s.productId] || 0) + s.quantity;
+    });
+
+    const products = await ProductService.list();
+
+    return Object.entries(map)
+      .map(([id, qty]) => {
+        const p = products.find((x: any) => x.id === Number(id));
+        return {
+          name: p?.name || "Unknown",
+          quantity: qty,
+        };
+      })
+      .sort((a, b) => b.quantity - a.quantity)
+      .slice(0, limit);
   }
 }

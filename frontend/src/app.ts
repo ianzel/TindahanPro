@@ -9,54 +9,46 @@ import { renderRegister } from "./ui/RegisterView.js";
 
 type View = "dashboard" | "products" | "sales" | "reports" | "suppliers" | "credit";
 
-const appElement = document.getElementById("app");
-const loginScreenElement = document.getElementById("login-screen");
-const mainAppElement = document.getElementById("main-app");
+const root = document.getElementById("app") as HTMLElement;
+const loginScreen = document.getElementById("login-screen") as HTMLElement;
+const mainApp = document.getElementById("main-app") as HTMLElement;
 const logoutBtn = document.getElementById("logout-btn");
 
-if (!appElement || !loginScreenElement || !mainAppElement) {
-  throw new Error("Required app containers not found in index.html");
-}
-
-const root: HTMLElement = appElement;
-const loginScreen: HTMLElement = loginScreenElement;
-const mainApp: HTMLElement = mainAppElement;
-
-async function show(view: View): Promise<void> {
-  if (view === "dashboard") renderDashboard(root);
+async function show(view: View) {
+  if (view === "dashboard") await renderDashboard(root);
   if (view === "products") await renderProducts(root);
-  if (view === "sales") renderSales(root);
-  if (view === "reports") renderReports(root);
+  if (view === "sales") await renderSales(root);
+  if (view === "reports") await renderReports(root);
   if (view === "suppliers") renderSuppliers(root);
   if (view === "credit") renderCredit(root);
 }
 
-function showLogin(): void {
+function showLogin() {
   mainApp.style.display = "none";
   renderLogin(startApp, showRegister);
 }
 
-function showRegister(): void {
+function showRegister() {
   mainApp.style.display = "none";
   renderRegister(showLogin);
 }
 
-function startApp(): void {
+function startApp() {
   loginScreen.innerHTML = "";
-  mainApp.style.display = "block";
-  void show("dashboard");
+  mainApp.style.display = "flex"; // IMPORTANT
+  show("dashboard");
 }
 
-document.getElementById("nav-dashboard")?.addEventListener("click", () => void show("dashboard"));
-document.getElementById("nav-products")?.addEventListener("click", () => void show("products"));
-document.getElementById("nav-sales")?.addEventListener("click", () => void show("sales"));
-document.getElementById("nav-reports")?.addEventListener("click", () => void show("reports"));
-document.getElementById("nav-suppliers")?.addEventListener("click", () => void show("suppliers"));
-document.getElementById("nav-credit")?.addEventListener("click", () => void show("credit"));
+/* NAVIGATION */
+document.getElementById("nav-dashboard")?.addEventListener("click", () => show("dashboard"));
+document.getElementById("nav-products")?.addEventListener("click", () => show("products"));
+document.getElementById("nav-sales")?.addEventListener("click", () => show("sales"));
+document.getElementById("nav-reports")?.addEventListener("click", () => show("reports"));
+document.getElementById("nav-suppliers")?.addEventListener("click", () => show("suppliers"));
+document.getElementById("nav-credit")?.addEventListener("click", () => show("credit"));
 
 logoutBtn?.addEventListener("click", () => {
-  localStorage.removeItem("tp_logged_in");
-  localStorage.removeItem("tp_user");
+  localStorage.clear();
   showLogin();
 });
 

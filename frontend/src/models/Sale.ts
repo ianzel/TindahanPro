@@ -7,4 +7,4 @@ export interface Sale {
   totalAmount: number;
   profit: number;
   dateISO: string;
-}
+}///

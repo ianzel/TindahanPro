@@ -1,36 +1,45 @@
-import { Product } from "../models/Product.js";
-import { StorageService } from "./StorageService.js";
-
-const KEY = "tp_products";
+const API = "http://localhost:3000/products"; // try this
 
 export class ProductService {
-  static list(): Product[] {
-    return StorageService.get<Product[]>(KEY, []);
+  static async list() {
+    const res = await fetch(API);
+
+    if (!res.ok) {
+      throw new Error("Cannot load product from server");
+    }
+
+    return res.json();
   }
 
-  static saveAll(products: Product[]): void {
-    StorageService.set(KEY, products);
+  static async getById(id: number) {
+    const res = await fetch(`${API}/${id}`);
+
+    if (!res.ok) {
+      throw new Error("Product not found");
+    }
+
+    return res.json();
   }
 
-  static add(product: Product): void {
-    const products = this.list();
-    products.push(product);
-    this.saveAll(products);
+  static async add(product: any) {
+    return fetch(API, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(product),
+    });
   }
 
-  static update(updated: Product): void {
-    const products = this.list().map((product) =>
-      product.id === updated.id ? updated : product
-    );
-    this.saveAll(products);
+  static async update(product: any) {
+    return fetch(`${API}/${product.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(product),
+    });
   }
 
-  static remove(id: number): void {
-    const products = this.list().filter((product) => product.id !== id);
-    this.saveAll(products);
-  }
-
-  static getById(id: number): Product | undefined {
-    return this.list().find((product) => product.id === id);
+  static async remove(id: number) {
+    return fetch(`${API}/${id}`, {
+      method: "DELETE",
+    });
   }
 }
