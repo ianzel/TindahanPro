@@ -24,7 +24,7 @@ body {
   display: flex;
   flex-direction: column;
   padding: 20px 12px;
-  box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
 }
 
 .sidebar h2 {
@@ -49,7 +49,7 @@ body {
 }
 
 .sidebar button:hover {
-  background: rgba(255,255,255,0.08);
+  background: rgba(255, 255, 255, 0.08);
   color: white;
 }
 
@@ -108,7 +108,7 @@ body {
   padding: 20px;
   border-radius: 12px;
   margin-bottom: 20px;
-  box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
 }
 
 /* ===== GRID ===== */
@@ -155,7 +155,7 @@ form {
   padding: 20px;
   border-radius: 12px;
   max-width: 420px;
-  box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
 }
 
 label {
@@ -165,7 +165,8 @@ label {
   display: block;
 }
 
-input, select {
+input,
+select {
   width: 100%;
   padding: 10px;
   margin-top: 6px;
@@ -174,7 +175,8 @@ input, select {
   outline: none;
 }
 
-input:focus, select:focus {
+input:focus,
+select:focus {
   border-color: #3b82f6;
 }
 
@@ -201,7 +203,7 @@ button[type="submit"]:hover {
   padding: 12px;
   border-radius: 8px;
   margin-bottom: 8px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 }
 
 /* ===== LOW STOCK ===== */
