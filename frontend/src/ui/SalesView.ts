@@ -3,29 +3,38 @@ import { SalesService } from "../services/SalesService.js";
 
 export async function renderSales(root: HTMLElement) {
   const products = await ProductService.list();
+  const sales = await SalesService.list();
 
   root.innerHTML = `
-    <h2>Sales</h2>
+    <div class="card">
+      <h2>Record Sale</h2>
 
-    <form id="sale-form">
-      <select id="product">
-        ${products
-          .map(
-            (p: any) => `
-          <option value="${p.id}">
-            ${p.name}
-          </option>
-        `
-          )
-          .join("")}
-      </select>
+      <form id="sale-form" class="form-grid">
+        <select id="product">
+          ${products.map((p: any) => `
+            <option value="${p.id}">
+              ${p.name} (Stock: ${p.stock})
+            </option>
+          `).join("")}
+        </select>
 
-      <input id="qty" type="number" min="1" required />
+        <input id="qty" type="number" placeholder="Quantity" required />
+        <button type="submit">Record Sale</button>
+      </form>
 
-      <button type="submit">Record</button>
-    </form>
+      <div id="msg"></div>
+    </div>
 
-    <div id="msg"></div>
+    <div class="card">
+      <h3>Sales History</h3>
+
+      ${sales.map((s: any) => `
+        <div class="sale-item">
+          <strong>${s.productName || "Product"}</strong>
+          <span>₱${Number(s.totalAmount).toFixed(2)}</span>
+        </div>
+      `).join("")}
+    </div>
   `;
 
   const form = document.getElementById("sale-form") as HTMLFormElement;
@@ -34,23 +43,22 @@ export async function renderSales(root: HTMLElement) {
   form.onsubmit = async (e) => {
     e.preventDefault();
 
-    const productId = Number(
-      (document.getElementById("product") as HTMLSelectElement).value
-    );
-
-    const qty = Number(
-      (document.getElementById("qty") as HTMLInputElement).value
-    );
-
     try {
-      const sale = await SalesService.record(productId, qty);
+      const productId = Number(
+        (document.getElementById("product") as HTMLSelectElement).value
+      );
 
-      msg.innerHTML = `
-        <p>✅ Sale recorded</p>
-        <p>Total: ₱${sale.totalAmount}</p>
-      `;
+      const qty = Number(
+        (document.getElementById("qty") as HTMLInputElement).value
+      );
+
+      await SalesService.record(productId, qty);
+
+      msg.innerHTML = `<p style="color:green;">Sale recorded!</p>`;
+
+      renderSales(root); // refresh
     } catch (err) {
-      msg.innerHTML = `<p>❌ Error</p>`;
+      msg.innerHTML = `<p style="color:red;">Error recording sale</p>`;
     }
   };
 }

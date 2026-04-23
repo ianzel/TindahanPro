@@ -1,32 +1,44 @@
-import { Supplier } from "../models/Supplier.js";
-import { SupplierService } from "../services/SupplierService.js";
+const KEY = "tp_suppliers";
+
+function getSuppliers() {
+  return JSON.parse(localStorage.getItem(KEY) || "[]");
+}
+
+function saveSuppliers(data: any[]) {
+  localStorage.setItem(KEY, JSON.stringify(data));
+}
 
 export function renderSuppliers(root: HTMLElement) {
-
-  const suppliers = SupplierService.list();
+  const suppliers = getSuppliers();
 
   root.innerHTML = `
-    <h2>Suppliers</h2>
+    <div class="card">
+      <h2>Suppliers</h2>
 
-    <form id="supplier-form">
-      <label>Supplier Name</label>
-      <input id="s-name" required />
+      <form id="supplier-form" class="form-grid">
+        <input id="name" placeholder="Supplier Name" required />
+        <input id="contact" placeholder="Contact Number" required />
+        <button type="submit">Add Supplier</button>
+      </form>
+    </div>
 
-      <label>Contact</label>
-      <input id="s-contact" required />
+    <div class="card">
+      <h3>Supplier List</h3>
 
-      <button type="submit">Add Supplier</button>
-    </form>
-
-    <h3>Supplier List</h3>
-
-    <ul>
-      ${suppliers.map((s: Supplier) =>
-        `<li>${s.name} - ${s.contact}
-        <button data-del="${s.id}">Delete</button>
-        </li>`
-      ).join("")}
-    </ul>
+      ${
+        suppliers.length === 0
+          ? "<p>No suppliers yet</p>"
+          : suppliers.map((s: any, i: number) => `
+              <div class="list-item">
+                <div>
+                  <strong>${s.name}</strong>
+                  <p>${s.contact}</p>
+                </div>
+                <button data-id="${i}" class="delete-btn">Delete</button>
+              </div>
+            `).join("")
+      }
+    </div>
   `;
 
   const form = document.getElementById("supplier-form") as HTMLFormElement;
@@ -34,22 +46,21 @@ export function renderSuppliers(root: HTMLElement) {
   form.onsubmit = (e) => {
     e.preventDefault();
 
-    const supplier: Supplier = {
-      id: crypto.randomUUID(),
-      name: (document.getElementById("s-name") as HTMLInputElement).value,
-      contact: (document.getElementById("s-contact") as HTMLInputElement).value
-    };
+    const name = (document.getElementById("name") as HTMLInputElement).value;
+    const contact = (document.getElementById("contact") as HTMLInputElement).value;
 
-    SupplierService.add(supplier);
+    const updated = [...suppliers, { name, contact }];
+    saveSuppliers(updated);
+
     renderSuppliers(root);
   };
 
-  root.querySelectorAll("button[data-del]").forEach(btn => {
+  document.querySelectorAll(".delete-btn").forEach(btn => {
     btn.addEventListener("click", () => {
-      const id = btn.getAttribute("data-del")!;
-      SupplierService.remove(id);
+      const id = Number((btn as HTMLElement).getAttribute("data-id"));
+      const updated = suppliers.filter((_: any, i: number) => i !== id);
+      saveSuppliers(updated);
       renderSuppliers(root);
     });
   });
-
 }

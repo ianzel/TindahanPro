@@ -35,7 +35,6 @@ export class ReportService {
     };
   }
 
-  // ✅ FIXED
   static async salesBetween(start: Date, end: Date) {
     const sales = await SalesService.list();
 
@@ -69,5 +68,10 @@ export class ReportService {
       })
       .sort((a, b) => b.quantity - a.quantity)
       .slice(0, limit);
+  }
+
+  /* ✅ ADD THIS */
+  static async getAllSales() {
+    return await SalesService.list();
   }
 }

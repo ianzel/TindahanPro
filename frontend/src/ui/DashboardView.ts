@@ -1,23 +1,21 @@
 import { ReportService } from "../services/ReportService.js";
 
-export async function renderDashboard(root: HTMLElement): Promise<void> {
+export async function renderDashboard(root: HTMLElement) {
   const summary = await ReportService.todaySummary();
   const lowStock = await ReportService.lowStockItems();
-  const best = await ReportService.bestSellingProducts();
+  const sales = await ReportService.getAllSales();
 
   root.innerHTML = `
-    <div class="card">
-      <h2>Dashboard Overview</h2>
-    </div>
+    <h2>Dashboard</h2>
 
     <div class="grid">
       <div class="stat blue">
-        <h3>Total Sales</h3>
+        <h3>Total Sales Today</h3>
         <p>₱${summary.totalSales.toFixed(2)}</p>
       </div>
 
       <div class="stat green">
-        <h3>Profit</h3>
+        <h3>Total Profit</h3>
         <p>₱${summary.totalProfit.toFixed(2)}</p>
       </div>
 
@@ -27,39 +25,98 @@ export async function renderDashboard(root: HTMLElement): Promise<void> {
       </div>
     </div>
 
-    <div class="card">
-      <h3>Best Selling Products</h3>
-      <canvas id="salesChart"></canvas>
+    <div style="display:grid; grid-template-columns: 2fr 1fr; gap:20px; margin-top:20px;">
+      
+      <div class="card">
+        <h3>Sales Trend</h3>
+        <canvas id="salesChart"></canvas>
+      </div>
+
+      <div class="card">
+        <h3>Low Stock Items</h3>
+        ${
+          lowStock.length === 0
+            ? "<p>No low stock items</p>"
+            : `<ul>
+                ${lowStock
+                  .map((p: any) => `<li>${p.name} (${p.stock})</li>`)
+                  .join("")}
+              </ul>`
+        }
+      </div>
+
     </div>
 
     <div class="card">
-      <h3>Low Stock</h3>
-      ${
-        lowStock.length === 0
-          ? "<p style='color:green;'>✔ All good</p>"
-          : lowStock.map((p: any) => `
-              <p style="color:red;">⚠ ${p.name} (${p.stock})</p>
-            `).join("")
-      }
+      <h3>Sales Distribution</h3>
+      <canvas id="pieChart"></canvas>
     </div>
   `;
 
-  const canvas = document.getElementById("salesChart") as HTMLCanvasElement;
+  /* ===== SAFETY: wait for DOM ===== */
+  setTimeout(() => {
+    const ChartJS = (window as any).Chart;
 
-  if (!canvas || !(window as any).Chart) return;
+    if (!ChartJS) {
+      console.error("Chart.js not loaded");
+      return;
+    }
 
-  const ctx = canvas.getContext("2d");
-  if (!ctx) return;
+    /* ===== LINE CHART ===== */
+    const grouped: Record<string, number> = {};
 
-  new (window as any).Chart(ctx, {
-    type: "pie",
-    data: {
-      labels: best.map((b: any) => b.name),
-      datasets: [
-        {
-          data: best.map((b: any) => b.quantity),
-        },
-      ],
-    },
-  });
+    sales.forEach((s: any) => {
+      const date = new Date(s.dateISO).toLocaleDateString();
+      grouped[date] = (grouped[date] || 0) + Number(s.totalAmount);
+    });
+
+    const labels = Object.keys(grouped);
+    const data = Object.values(grouped);
+
+    const ctx = document.getElementById("salesChart") as HTMLCanvasElement;
+
+    if (ctx) {
+      new ChartJS(ctx, {
+        type: "line",
+        data: {
+          labels,
+          datasets: [
+            {
+              label: "Sales",
+              data,
+              borderWidth: 2,
+              tension: 0.3
+            }
+          ]
+        }
+      });
+    }
+
+    /* ===== PIE CHART ===== */
+    const productMap: Record<string, number> = {};
+
+    sales.forEach((s: any) => {
+      const name = s.productName || "Unknown";
+      productMap[name] = (productMap[name] || 0) + Number(s.totalAmount);
+    });
+
+    const pieLabels = Object.keys(productMap);
+    const pieData = Object.values(productMap);
+
+    const pieCtx = document.getElementById("pieChart") as HTMLCanvasElement;
+
+    if (pieCtx) {
+      new ChartJS(pieCtx, {
+        type: "doughnut",
+        data: {
+          labels: pieLabels,
+          datasets: [
+            {
+              data: pieData
+            }
+          ]
+        }
+      });
+    }
+  }, 100);
 }

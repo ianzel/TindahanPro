@@ -1,69 +1,68 @@
-import { Credit } from "../models/Credit.js";
-import { CreditService } from "../services/CreditService.js";
+const KEY = "tp_credit";
+
+function getCredits() {
+  return JSON.parse(localStorage.getItem(KEY) || "[]");
+}
+
+function saveCredits(data: any[]) {
+  localStorage.setItem(KEY, JSON.stringify(data));
+}
 
 export function renderCredit(root: HTMLElement) {
-
-  const credits = CreditService.list();
+  const credits = getCredits();
 
   root.innerHTML = `
-    <h2>Customer Credit (Utang)</h2>
+    <div class="card">
+      <h2>Customer Credit</h2>
 
-    <form id="credit-form">
+      <form id="credit-form" class="form-grid">
+        <input id="name" placeholder="Customer Name" required />
+        <input id="amount" type="number" placeholder="Amount" required />
+        <button type="submit">Add Credit</button>
+      </form>
+    </div>
 
-      <label>Customer Name</label>
-      <input id="c-name" required />
+    <div class="card">
+      <h3>Credit List</h3>
 
-      <label>Amount</label>
-      <input id="c-amount" type="number" required />
-
-      <button type="submit">Add Credit</button>
-
-    </form>
-
-    <h3>Credit List</h3>
-
-    <ul>
-      ${credits.map(c =>
-        `<li>
-          ${c.customerName} - ₱${c.amount} - ${c.status}
-          ${c.status === "unpaid"
-            ? `<button data-pay="${c.id}">Mark Paid</button>`
-            : ""}
-        </li>`
-      ).join("")}
-    </ul>
+      ${
+        credits.length === 0
+          ? "<p>No credit records</p>"
+          : credits.map((c: any, i: number) => `
+              <div class="list-item">
+                <strong>${c.name}</strong>
+                <span class="badge ${c.amount > 0 ? "red" : "green"}">
+                  ₱${c.amount}
+                </span>
+                <button data-id="${i}" class="delete-btn">Delete</button>
+              </div>
+            `).join("")
+      }
+    </div>
   `;
 
   const form = document.getElementById("credit-form") as HTMLFormElement;
 
   form.onsubmit = (e) => {
-
     e.preventDefault();
 
-    const credit: Credit = {
-      id: crypto.randomUUID(),
-      customerName: (document.getElementById("c-name") as HTMLInputElement).value,
-      amount: Number((document.getElementById("c-amount") as HTMLInputElement).value),
-      dateISO: new Date().toISOString(),
-      status: "unpaid"
-    };
+    const name = (document.getElementById("name") as HTMLInputElement).value;
+    const amount = Number(
+      (document.getElementById("amount") as HTMLInputElement).value
+    );
 
-    CreditService.add(credit);
+    const updated = [...credits, { name, amount }];
+    saveCredits(updated);
 
     renderCredit(root);
   };
 
-  root.querySelectorAll("button[data-pay]").forEach(btn => {
-
+  document.querySelectorAll(".delete-btn").forEach(btn => {
     btn.addEventListener("click", () => {
-
-      const id = btn.getAttribute("data-pay")!;
-      CreditService.markPaid(id);
-
+      const id = Number((btn as HTMLElement).getAttribute("data-id"));
+      const updated = credits.filter((_: any, i: number) => i !== id);
+      saveCredits(updated);
       renderCredit(root);
-
     });
-
   });
-
 }

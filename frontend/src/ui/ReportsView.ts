@@ -1,76 +1,45 @@
 import { ReportService } from "../services/ReportService.js";
 
-function startOfDay(d: Date) {
-  return new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0);
-}
-
-function endOfDay(d: Date) {
-  return new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59);
-}
-
 export async function renderReports(root: HTMLElement) {
-  const now = new Date();
-
-  const todayStart = startOfDay(now);
-  const todayEnd = endOfDay(now);
-
-  const weekStart = startOfDay(
-    new Date(now.getFullYear(), now.getMonth(), now.getDate() - 6)
-  );
-
-  const weekEnd = todayEnd;
-
-  const monthStart = startOfDay(
-    new Date(now.getFullYear(), now.getMonth(), 1)
-  );
-
-  const monthEnd = todayEnd;
-
-  const todaySales = await ReportService.salesBetween(todayStart, todayEnd);
-  const weekSales = await ReportService.salesBetween(weekStart, weekEnd);
-  const monthSales = await ReportService.salesBetween(monthStart, monthEnd);
-
-  const sum = (arr: any[]) => ({
-    sales: arr.reduce((s, x) => s + Number(x.totalAmount), 0),
-    profit: arr.reduce((s, x) => s + Number(x.profit), 0),
-    count: arr.length,
-  });
-
-  const t = sum(todaySales);
-  const w = sum(weekSales);
-  const m = sum(monthSales);
+  const summary = await ReportService.todaySummary();
 
   root.innerHTML = `
-    <h2>Reports</h2>
+    <div class="grid">
+      <div class="stat blue">
+        <h3>Sales</h3>
+        <p>₱${summary.totalSales.toFixed(2)}</p>
+      </div>
 
-    <canvas id="salesChart" height="100"></canvas>
+      <div class="stat green">
+        <h3>Profit</h3>
+        <p>₱${summary.totalProfit.toFixed(2)}</p>
+      </div>
 
-    <h3>Today</h3>
-    <p>Transactions: ${t.count}</p>
-    <p>Total Sales: ₱${t.sales.toFixed(2)}</p>
+      <div class="stat orange">
+        <h3>Transactions</h3>
+        <p>${summary.transactions}</p>
+      </div>
+    </div>
 
-    <h3>Last 7 Days</h3>
-    <p>Transactions: ${w.count}</p>
-    <p>Total Sales: ₱${w.sales.toFixed(2)}</p>
-
-    <h3>This Month</h3>
-    <p>Transactions: ${m.count}</p>
-    <p>Total Sales: ₱${m.sales.toFixed(2)}</p>
+    <div class="card">
+      <h3>Report Chart</h3>
+      <canvas id="reportChart"></canvas>
+    </div>
   `;
 
-  // ✅ Chart
-  const ctx = document.getElementById("salesChart") as HTMLCanvasElement;
+  setTimeout(() => {
+    const ChartJS = (window as any).Chart;
 
-  new (window as any).Chart(ctx, {
-    type: "bar",
-    data: {
-      labels: ["Today", "Last 7 Days", "This Month"],
-      datasets: [
-        {
-          label: "Sales (₱)",
-          data: [t.sales, w.sales, m.sales],
-        },
-      ],
-    },
-  });
+    if (!ChartJS) return;
+
+    new ChartJS(document.getElementById("reportChart"), {
+      type: "bar",
+      data: {
+        labels: ["Sales", "Profit"],
+        datasets: [{
+          data: [summary.totalSales, summary.totalProfit]
+        }]
+      }
+    });
+  }, 100);
 }

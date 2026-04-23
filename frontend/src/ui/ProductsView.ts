@@ -1,137 +1,97 @@
-import { Product } from "../models/Product.js";
+import { ProductService } from "../services/ProductService.js";
 
-const API_URL = "http://localhost:3000/products";
-
-export async function renderProducts(root: HTMLElement): Promise<void> {
-  let products: Product[] = [];
-
-  try {
-    const response = await fetch(API_URL);
-    products = await response.json();
-  } catch {
-    root.innerHTML = `<p>Cannot load products from server.</p>`;
-    return;
-  }
+export async function renderProducts(root: HTMLElement) {
+  const products = await ProductService.list();
 
   root.innerHTML = `
+  <!-- ADD PRODUCT -->
+  <div class="card product-form-card">
     <h2>Products</h2>
 
-    <form id="product-form">
-      <label>Product Name</label>
-      <input id="p-name" required />
-
-      <label>Category</label>
-      <input id="p-category" required />
-
-      <label>Buying Price</label>
-      <input id="p-buy" type="number" min="0" step="0.01" required />
-
-      <label>Selling Price</label>
-      <input id="p-sell" type="number" min="0" step="0.01" required />
-
-      <label>Stock</label>
-      <input id="p-stock" type="number" min="0" required />
-
-      <label>Minimum Stock</label>
-      <input id="p-min" type="number" min="0" required />
+    <form id="product-form" class="product-form">
+      <input id="name" placeholder="Product Name" required />
+      <input id="category" placeholder="Category" required />
+      <input id="buying" type="number" placeholder="Buying Price" required />
+      <input id="selling" type="number" placeholder="Selling Price" required />
+      <input id="stock" type="number" placeholder="Stock" required />
+      <input id="minStock" type="number" placeholder="Min Stock" required />
 
       <button type="submit">Add Product</button>
     </form>
+  </div>
 
-    <hr />
-
+  <!-- PRODUCT TABLE -->
+  <div class="card">
     <h3>Product List</h3>
 
-    ${
-      products.length === 0
-        ? "<p>No products found.</p>"
-        : `
-          <table>
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Category</th>
-                <th>Buying Price</th>
-                <th>Selling Price</th>
-                <th>Stock</th>
-                <th>Min Stock</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${products.map((product) => `
-                <tr>
-                  <td>${product.name}</td>
-                  <td>${product.category}</td>
-                  <td>₱${Number(product.buyingPrice).toFixed(2)}</td>
-                  <td>₱${Number(product.sellingPrice).toFixed(2)}</td>
-                  <td>${product.stock}</td>
-                  <td>${product.minStock}</td>
-                  <td>
-                    <button class="delete-btn" data-id="${product.id}">Delete</button>
-                  </td>
-                </tr>
-              `).join("")}
-            </tbody>
-          </table>
-        `
-    }
-  `;
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Category</th>
+          <th>Stock</th>
+          <th>Price</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="product-table"></tbody>
+    </table>
+  </div>
+`;
 
+  // =========================
+  // ✅ FORM SUBMIT
+  // =========================
   const form = document.getElementById("product-form") as HTMLFormElement;
 
-  form.onsubmit = async (event) => {
-    event.preventDefault();
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
 
-    const newProduct = {
-      name: (document.getElementById("p-name") as HTMLInputElement).value.trim(),
-      category: (document.getElementById("p-category") as HTMLInputElement).value.trim(),
-      buyingPrice: Number((document.getElementById("p-buy") as HTMLInputElement).value),
-      sellingPrice: Number((document.getElementById("p-sell") as HTMLInputElement).value),
-      stock: Number((document.getElementById("p-stock") as HTMLInputElement).value),
-      minStock: Number((document.getElementById("p-min") as HTMLInputElement).value)
+    const product = {
+      name: (document.getElementById("name") as HTMLInputElement).value,
+      category: (document.getElementById("category") as HTMLInputElement).value,
+      buyingPrice: Number((document.getElementById("buying") as HTMLInputElement).value),
+      sellingPrice: Number((document.getElementById("selling") as HTMLInputElement).value),
+      stock: Number((document.getElementById("stock") as HTMLInputElement).value),
+      minStock: Number((document.getElementById("minStock") as HTMLInputElement).value),
     };
 
-    try {
-      const response = await fetch(API_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(newProduct)
-      });
+    await ProductService.add(product);
 
-      if (!response.ok) {
-        const data = await response.json();
-        alert(Array.isArray(data.message) ? data.message.join(", ") : "Failed to add product.");
-        return;
-      }
-
-      await renderProducts(root);
-    } catch {
-      alert("Cannot connect to server.");
-    }
-  };
-
-  root.querySelectorAll<HTMLButtonElement>(".delete-btn").forEach((button) => {
-    button.onclick = async () => {
-      const id = button.getAttribute("data-id");
-      if (!id) return;
-
-      try {
-        const response = await fetch(`${API_URL}/${id}`, {
-          method: "DELETE"
-        });
-
-        if (!response.ok) {
-          alert("Failed to delete product.");
-          return;
-        }
-
-        await renderProducts(root);
-      } catch {
-        alert("Cannot connect to server.");
-      }
-    };
+    // 🔥 refresh UI
+    await renderProducts(root);
   });
+
+  // =========================
+  // ✅ RENDER TABLE
+  // =========================
+  const table = document.getElementById("product-table") as HTMLElement;
+
+  if (products.length === 0) {
+    table.innerHTML = `<tr><td colspan="5">No products yet</td></tr>`;
+    return;
+  }
+
+  table.innerHTML = products.map((p: any) => {
+    let status = "OK";
+    let statusClass = "status-ok";
+
+    if (p.stock <= 0) {
+      status = "Out";
+      statusClass = "status-out";
+    } else if (p.stock <= p.minStock) {
+      status = "Low";
+      statusClass = "status-low";
+    }
+
+    return `
+      <tr>
+        <td>${p.name}</td>
+        <td>${p.category}</td>
+        <td>${p.stock}</td>
+        <td>₱${p.sellingPrice}</td>
+        <td class="${statusClass}">${status}</td>
+      </tr>
+    `;
+  }).join("");
 }
