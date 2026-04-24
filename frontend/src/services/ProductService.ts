@@ -1,17 +1,39 @@
+const API = "http://127.0.0.1:3000/products";
+
 export class ProductService {
-
   static async list() {
-    return JSON.parse(localStorage.getItem("products") || "[]");
+    try {
+      const res = await fetch(API);
+
+      if (!res.ok) {
+        throw new Error("Server error");
+      }
+
+      return await res.json();
+    } catch (err) {
+      console.error("PRODUCT FETCH ERROR:", err);
+      return []; // ✅ prevent crash
+    }
   }
 
-  static async add(product: any) {
-    const products = await this.list();
+  static async create(data: any) {
+    try {
+      const res = await fetch(API, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
 
-    product.id = Date.now();
+      if (!res.ok) {
+        throw new Error("Failed to save");
+      }
 
-    products.push(product);
-
-    localStorage.setItem("products", JSON.stringify(products));
+      return await res.json();
+    } catch (err) {
+      console.error("CREATE ERROR:", err);
+      throw err;
+    }
   }
-
 }

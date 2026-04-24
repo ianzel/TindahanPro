@@ -1,4 +1,4 @@
-const API = "http://localhost:3000/sales";
+const API = "http://127.0.0.1:3000/sales";
 
 export class SalesService {
   static async list() {

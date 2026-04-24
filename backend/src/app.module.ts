@@ -1,8 +1,13 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AuthModule } from './auth/auth.module';
-import { ProductsModule } from './products/products.module';
-import { SalesModule } from './sales/sales.module';
+
+import { Product } from './products/product.entity';
+import { Sale } from './sales/sale.entity';
+import { User } from './auth/user.entity';
+
+import { ProductsModule } from './products/products.module'; // ✅ ADD THIS
+import { SalesModule } from './sales/sales.module'; // (if you have)
+import { AuthModule } from './auth/auth.module'; // (if you have)
 
 @Module({
   imports: [
@@ -13,12 +18,13 @@ import { SalesModule } from './sales/sales.module';
       username: 'root',
       password: '',
       database: 'tindahanpro_db',
-      autoLoadEntities: true,
-      synchronize: false,
+      entities: [Product, Sale, User],
+      synchronize: true,
     }),
-    AuthModule,
-    ProductsModule,
+
+    ProductsModule, // ✅ VERY IMPORTANT
     SalesModule,
+    AuthModule,
   ],
 })
 export class AppModule {}

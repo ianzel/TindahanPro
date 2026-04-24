@@ -25,4 +25,6 @@ export class Sale {
 
   @CreateDateColumn({ type: 'datetime' })
   dateISO: Date;
+  @Column()
+productName: string;
 }

@@ -10,6 +10,7 @@ export class SalesService {
   constructor(
     @InjectRepository(Sale)
     private saleRepository: Repository<Sale>,
+
     @InjectRepository(Product)
     private productRepository: Repository<Product>,
   ) {}
@@ -19,28 +20,27 @@ export class SalesService {
       where: { id: data.productId },
     });
 
-    if (!product) {
-      throw new NotFoundException('Product not found');
-    }
-
-    if (data.quantity <= 0) {
-      throw new BadRequestException('Quantity must be greater than 0');
-    }
+    if (!product) throw new NotFoundException('Product not found');
+    if (data.quantity <= 0) throw new BadRequestException('Invalid quantity');
 
     if (product.stock < data.quantity) {
-      throw new BadRequestException(`Not enough stock. Available: ${product.stock}`);
+      throw new BadRequestException(`Not enough stock (${product.stock})`);
     }
 
     const unitPrice = Number(product.sellingPrice);
     const unitCost = Number(product.buyingPrice);
+
     const totalAmount = unitPrice * data.quantity;
     const profit = (unitPrice - unitCost) * data.quantity;
 
-    product.stock = product.stock - data.quantity;
+    // ✅ reduce stock
+    product.stock -= data.quantity;
     await this.productRepository.save(product);
 
+    // ✅ include productName
     const sale = this.saleRepository.create({
       productId: data.productId,
+      productName: product.name,
       quantity: data.quantity,
       unitPrice,
       unitCost,
