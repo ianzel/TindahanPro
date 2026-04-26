@@ -24,53 +24,40 @@
       <button id="nav-credit">Credit</button>
 
       <div class="spacer"></div>
-
-      <!-- (OPTIONAL: keep or remove this since logout is in profile) -->
-      <!-- <button id="logout-btn" class="logout">Logout</button> -->
     </aside>
 
     <!-- MAIN -->
     <div class="main">
 
-      <!-- HEADER WITH PROFILE -->
-   <div class="header">
-  <h3 class="header-title">Dashboard</h3>
+      <!-- HEADER (ONLY PROFILE ICON NOW) -->
+      <div class="header">
+        <div></div> <!-- empty left -->
 
-  <div class="profile-wrapper">
-    <button id="profile-btn" class="profile-icon">👤</button>
+        <div class="header-right">
+          <div class="profile-wrapper">
+            <button id="profile-btn" class="profile-icon">👤</button>
 
-    <div id="profile-menu" class="profile-menu">
-      <p id="user-name">User</p>
-      <small id="user-role">Store Owner</small>
+            <div id="profile-menu" class="profile-menu">
+              <p id="user-name">User</p>
+              <p id="user-role">Store Owner</p>
 
-      <button id="edit-profile">Edit Profile</button>
-      <button id="logout-btn" class="logout">Logout</button>
-    </div>
-  </div>
-</div>
+              <button id="edit-profile-btn">Edit Profile</button>
+              <button id="logout-btn">Logout</button>
+            </div>
+          </div>
+        </div>
+      </div>
 
-<!-- PROFILE MODAL -->
-<div id="profile-modal" class="modal">
-  <div class="modal-content">
+      <!-- PROFILE MODAL -->
+      <div id="profile-modal" class="modal">
+        <div class="modal-content">
+          <h3>Edit Profile</h3>
 
-    <h3>Edit Profile</h3>
+          <input id="edit-username" placeholder="Username" />
+          <input id="edit-password" type="password" placeholder="New Password" />
 
-    <input id="edit-username" placeholder="Username" />
-    <input id="edit-password" type="password" placeholder="New Password" />
-
-    <!-- BUTTON CONTAINER -->
-    <div class="modal-actions">
-      <button id="save-profile" class="btn-save">Save</button>
-    </div>
-
-  </div>
-</div>
-          <!-- DROPDOWN MENU -->
-          <div class="profile-menu" id="profile-menu">
-            <p><strong id="user-name">User</strong></p>
-            <p id="user-role">Store Owner</p>
-            <hr />
-            <button id="logout-btn">Logout</button>
+          <div class="modal-actions">
+            <button id="save-profile" class="btn-save">Save</button>
           </div>
         </div>
       </div>

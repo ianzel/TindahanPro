@@ -82,8 +82,8 @@ body {
   background: white;
   border-bottom: 1px solid #e5e7eb;
   display: flex;
+  justify-content: flex-end; /* push profile to right */
   align-items: center;
-  justify-content: space-between;
   padding: 0 25px;
 }
 
@@ -314,4 +314,11 @@ button[type="submit"]:hover {
   color: white;
   border-radius: 8px;
   cursor: pointer;
+}
+
+#pieChart {
+  max-width: 200px;
+  max-height: 200px;
+  margin: 20px auto;
+  display: block;
 }

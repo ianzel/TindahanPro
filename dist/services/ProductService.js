@@ -3,33 +3,25 @@ export class ProductService {
     static async list() {
         try {
             const res = await fetch(API);
-            if (!res.ok) {
+            if (!res.ok)
                 throw new Error("Server error");
-            }
             return await res.json();
         }
         catch (err) {
-            console.error("PRODUCT FETCH ERROR:", err);
-            return []; // ✅ prevent crash
+            console.error("PRODUCT LOAD ERROR:", err);
+            return []; // prevents blank screen
         }
     }
     static async create(data) {
-        try {
-            const res = await fetch(API, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(data),
-            });
-            if (!res.ok) {
-                throw new Error("Failed to save");
-            }
-            return await res.json();
-        }
-        catch (err) {
-            console.error("CREATE ERROR:", err);
-            throw err;
-        }
+        const res = await fetch(API, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(data),
+        });
+        if (!res.ok)
+            throw new Error("Create failed");
+        return res.json();
     }
 }

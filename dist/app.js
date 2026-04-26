@@ -13,13 +13,14 @@ const headerTitle = document.querySelector(".header-title");
 const profileBtn = document.getElementById("profile-btn");
 const profileMenu = document.getElementById("profile-menu");
 const logoutBtn = document.getElementById("logout-btn");
-/* SAFE VIEW LOADER */
+/* ===== SAFE RENDER ===== */
 async function show(view) {
     try {
         if (headerTitle) {
             headerTitle.textContent =
                 view.charAt(0).toUpperCase() + view.slice(1);
         }
+        root.innerHTML = `<p>Loading...</p>`;
         if (view === "dashboard")
             await renderDashboard(root);
         if (view === "products")
@@ -34,11 +35,43 @@ async function show(view) {
             renderCredit(root);
     }
     catch (err) {
-        console.error(err);
-        root.innerHTML = `<p style="color:red;">Failed to load ${view}</p>`;
+        console.error("VIEW ERROR:", err);
+        root.innerHTML = `
+      <div class="card">
+        <h2 style="color:red;">Something broke</h2>
+      </div>
+    `;
     }
 }
-/* AUTH */
+/* ===== PROFILE ===== */
+if (profileBtn && profileMenu) {
+    profileBtn.onclick = () => {
+        profileMenu.classList.toggle("show");
+    };
+    window.onclick = (e) => {
+        if (!profileBtn.contains(e.target) &&
+            !profileMenu.contains(e.target)) {
+            profileMenu.classList.remove("show");
+        }
+    };
+}
+/* ===== USER INFO ===== */
+function loadUser() {
+    const user = JSON.parse(localStorage.getItem("tp_user") || "{}");
+    const name = document.getElementById("user-name");
+    const role = document.getElementById("user-role");
+    if (name)
+        name.textContent = user.username || "User";
+    if (role)
+        role.textContent = user.role || "Store Owner";
+}
+/* ===== AUTH ===== */
+function startApp() {
+    loginScreen.innerHTML = "";
+    mainApp.style.display = "flex";
+    loadUser();
+    show("dashboard");
+}
 function showLogin() {
     mainApp.style.display = "none";
     renderLogin(startApp, showRegister);
@@ -47,46 +80,19 @@ function showRegister() {
     mainApp.style.display = "none";
     renderRegister(showLogin);
 }
-function startApp() {
-    loginScreen.innerHTML = "";
-    mainApp.style.display = "flex";
-    loadUserInfo();
-    show("dashboard");
-}
-/* PROFILE TOGGLE */
-profileBtn?.addEventListener("click", () => {
-    profileMenu?.classList.toggle("show");
-});
-/* CLOSE WHEN CLICK OUTSIDE */
-window.addEventListener("click", (e) => {
-    if (!profileBtn?.contains(e.target) &&
-        !profileMenu?.contains(e.target)) {
-        profileMenu?.classList.remove("show");
-    }
-});
-/* LOAD USER INFO */
-function loadUserInfo() {
-    const user = JSON.parse(localStorage.getItem("tp_user") || "{}");
-    const nameEl = document.getElementById("user-name");
-    const roleEl = document.getElementById("user-role");
-    if (nameEl)
-        nameEl.textContent = user.username || "User";
-    if (roleEl)
-        roleEl.textContent = user.role || "Store Owner";
-}
-/* NAVIGATION */
+/* ===== NAV ===== */
 document.getElementById("nav-dashboard")?.addEventListener("click", () => show("dashboard"));
 document.getElementById("nav-products")?.addEventListener("click", () => show("products"));
 document.getElementById("nav-sales")?.addEventListener("click", () => show("sales"));
 document.getElementById("nav-reports")?.addEventListener("click", () => show("reports"));
 document.getElementById("nav-suppliers")?.addEventListener("click", () => show("suppliers"));
 document.getElementById("nav-credit")?.addEventListener("click", () => show("credit"));
-/* LOGOUT */
+/* ===== LOGOUT ===== */
 logoutBtn?.addEventListener("click", () => {
     localStorage.clear();
     showLogin();
 });
-/* AUTO LOGIN */
+/* ===== AUTO LOGIN ===== */
 const isLoggedIn = localStorage.getItem("tp_logged_in") === "true";
 if (isLoggedIn) {
     startApp();
@@ -94,31 +100,3 @@ if (isLoggedIn) {
 else {
     showRegister();
 }
-const editBtn = document.getElementById("edit-profile");
-const modal = document.getElementById("profile-modal");
-const saveBtn = document.getElementById("save-profile");
-editBtn?.addEventListener("click", () => {
-    modal?.classList.add("show");
-    const user = JSON.parse(localStorage.getItem("tp_user") || "{}");
-    document.getElementById("edit-username").value =
-        user.username || "";
-});
-/* SAVE PROFILE */
-saveBtn?.addEventListener("click", () => {
-    const username = document.getElementById("edit-username").value;
-    const password = document.getElementById("edit-password").value;
-    const user = JSON.parse(localStorage.getItem("tp_user") || "{}");
-    user.username = username;
-    if (password)
-        user.password = password;
-    localStorage.setItem("tp_user", JSON.stringify(user));
-    alert("Profile updated!");
-    modal?.classList.remove("show");
-    loadUserInfo();
-});
-/* CLOSE MODAL */
-window.addEventListener("click", (e) => {
-    if (e.target === modal) {
-        modal?.classList.remove("show");
-    }
-});
