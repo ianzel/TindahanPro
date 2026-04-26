@@ -34,19 +34,35 @@
 
       <!-- HEADER WITH PROFILE -->
    <div class="header">
-  <div class="header-title">Dashboard</div>
+  <h3 class="header-title">Dashboard</h3>
 
-  <div class="header-right">
-    <div class="profile">
-      <div id="profile-btn" class="profile-icon">👤</div>
+  <div class="profile-wrapper">
+    <button id="profile-btn" class="profile-icon">👤</button>
 
-      <div id="profile-menu" class="profile-menu">
-        <p id="user-name">User</p>
-        <p id="user-role">Owner</p>
-        <hr />
-        <button id="logout-btn">Logout</button>
-      </div>
+    <div id="profile-menu" class="profile-menu">
+      <p id="user-name">User</p>
+      <small id="user-role">Store Owner</small>
+
+      <button id="edit-profile">Edit Profile</button>
+      <button id="logout-btn" class="logout">Logout</button>
     </div>
+  </div>
+</div>
+
+<!-- PROFILE MODAL -->
+<div id="profile-modal" class="modal">
+  <div class="modal-content">
+
+    <h3>Edit Profile</h3>
+
+    <input id="edit-username" placeholder="Username" />
+    <input id="edit-password" type="password" placeholder="New Password" />
+
+    <!-- BUTTON CONTAINER -->
+    <div class="modal-actions">
+      <button id="save-profile" class="btn-save">Save</button>
+    </div>
+
   </div>
 </div>
           <!-- DROPDOWN MENU -->

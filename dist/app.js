@@ -9,32 +9,36 @@ import { renderRegister } from "./ui/RegisterView.js";
 const root = document.getElementById("app");
 const loginScreen = document.getElementById("login-screen");
 const mainApp = document.getElementById("main-app");
-/* HEADER TITLE */
 const headerTitle = document.querySelector(".header-title");
-/* PROFILE */
 const profileBtn = document.getElementById("profile-btn");
 const profileMenu = document.getElementById("profile-menu");
-/* VIEW RENDER */
+const logoutBtn = document.getElementById("logout-btn");
+/* SAFE VIEW LOADER */
 async function show(view) {
-    // Update header title
-    if (headerTitle) {
-        headerTitle.textContent =
-            view.charAt(0).toUpperCase() + view.slice(1);
+    try {
+        if (headerTitle) {
+            headerTitle.textContent =
+                view.charAt(0).toUpperCase() + view.slice(1);
+        }
+        if (view === "dashboard")
+            await renderDashboard(root);
+        if (view === "products")
+            await renderProducts(root);
+        if (view === "sales")
+            await renderSales(root);
+        if (view === "reports")
+            await renderReports(root);
+        if (view === "suppliers")
+            renderSuppliers(root);
+        if (view === "credit")
+            renderCredit(root);
     }
-    if (view === "dashboard")
-        await renderDashboard(root);
-    if (view === "products")
-        await renderProducts(root);
-    if (view === "sales")
-        await renderSales(root);
-    if (view === "reports")
-        await renderReports(root);
-    if (view === "suppliers")
-        renderSuppliers(root);
-    if (view === "credit")
-        renderCredit(root);
+    catch (err) {
+        console.error(err);
+        root.innerHTML = `<p style="color:red;">Failed to load ${view}</p>`;
+    }
 }
-/* AUTH SCREENS */
+/* AUTH */
 function showLogin() {
     mainApp.style.display = "none";
     renderLogin(startApp, showRegister);
@@ -50,8 +54,7 @@ function startApp() {
     show("dashboard");
 }
 /* PROFILE TOGGLE */
-profileBtn?.addEventListener("click", (e) => {
-    e.stopPropagation(); // prevent closing immediately
+profileBtn?.addEventListener("click", () => {
     profileMenu?.classList.toggle("show");
 });
 /* CLOSE WHEN CLICK OUTSIDE */
@@ -78,19 +81,12 @@ document.getElementById("nav-sales")?.addEventListener("click", () => show("sale
 document.getElementById("nav-reports")?.addEventListener("click", () => show("reports"));
 document.getElementById("nav-suppliers")?.addEventListener("click", () => show("suppliers"));
 document.getElementById("nav-credit")?.addEventListener("click", () => show("credit"));
-/* LOGOUT (handles BOTH sidebar + profile logout) */
-function setupLogout() {
-    const logoutButtons = document.querySelectorAll("#logout-btn");
-    logoutButtons.forEach(btn => {
-        btn.addEventListener("click", () => {
-            localStorage.clear();
-            showLogin();
-        });
-    });
-}
-/* RUN LOGOUT SETUP AFTER LOAD */
-setTimeout(setupLogout, 0);
-/* AUTO LOGIN CHECK */
+/* LOGOUT */
+logoutBtn?.addEventListener("click", () => {
+    localStorage.clear();
+    showLogin();
+});
+/* AUTO LOGIN */
 const isLoggedIn = localStorage.getItem("tp_logged_in") === "true";
 if (isLoggedIn) {
     startApp();
@@ -98,3 +94,31 @@ if (isLoggedIn) {
 else {
     showRegister();
 }
+const editBtn = document.getElementById("edit-profile");
+const modal = document.getElementById("profile-modal");
+const saveBtn = document.getElementById("save-profile");
+editBtn?.addEventListener("click", () => {
+    modal?.classList.add("show");
+    const user = JSON.parse(localStorage.getItem("tp_user") || "{}");
+    document.getElementById("edit-username").value =
+        user.username || "";
+});
+/* SAVE PROFILE */
+saveBtn?.addEventListener("click", () => {
+    const username = document.getElementById("edit-username").value;
+    const password = document.getElementById("edit-password").value;
+    const user = JSON.parse(localStorage.getItem("tp_user") || "{}");
+    user.username = username;
+    if (password)
+        user.password = password;
+    localStorage.setItem("tp_user", JSON.stringify(user));
+    alert("Profile updated!");
+    modal?.classList.remove("show");
+    loadUserInfo();
+});
+/* CLOSE MODAL */
+window.addEventListener("click", (e) => {
+    if (e.target === modal) {
+        modal?.classList.remove("show");
+    }
+});
