@@ -474,3 +474,50 @@ canvas {
 .delete-btn:hover {
   background: #dc2626;
 }
+
+/* ===== HORIZONTAL FORM ===== */
+.horizontal-form {
+  display: flex;
+  gap: 15px;
+  align-items: end;
+  flex-wrap: wrap;
+}
+
+/* ===== SALES TABLE ===== */
+.sales-table {
+  margin-top: 15px;
+}
+
+/* HEADER */
+.sales-header {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1.5fr;
+  font-weight: 600;
+  color: #64748b;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+/* ROW */
+.sales-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1.5fr;
+  padding: 10px 0;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 14px;
+}
+
+/* BUTTON */
+.btn-primary {
+  height: 38px;
+  padding: 0 16px;
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.btn-primary:hover {
+  background: #2563eb;
+}

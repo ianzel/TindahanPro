@@ -6,44 +6,69 @@ export async function renderSales(root: HTMLElement) {
   const sales = await SalesService.list();
 
   root.innerHTML = `
+    <!-- ===== RECORD SALE ===== -->
     <div class="card">
       <h2>Record Sale</h2>
 
-      <form id="sale-form" class="form-grid">
-        <select id="product">
-          ${products.map((p: any) => `
-            <option value="${p.id}">
-              ${p.name} (Stock: ${p.stock})
-            </option>
-          `).join("")}
-        </select>
+      <form id="sale-form" class="horizontal-form">
 
-        <input id="qty" type="number" placeholder="Quantity" required />
+        <div class="form-group">
+          <label>Product</label>
+          <select id="product">
+            ${products.map((p: any) => `
+              <option value="${p.id}">
+                ${p.name} (Stock: ${p.stock})
+              </option>
+            `).join("")}
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Quantity</label>
+          <input id="qty" type="number" placeholder="Enter quantity" required />
+        </div>
 
         <button type="submit" class="btn-primary">
-          Record Sale
+          Record
         </button>
       </form>
 
       <div id="msg"></div>
     </div>
 
+    <!-- ===== SALES HISTORY ===== -->
     <div class="card">
       <h3>Sales History</h3>
 
-      ${sales.length === 0 
-        ? "<p>No sales yet</p>" 
-        : sales.map((s: any) => `
-          <div class="sale-item">
-            <strong>${s.productName}</strong>
-            <span>Qty: ${s.quantity}</span>
-            <span>₱${Number(s.totalAmount).toFixed(2)}</span>
-          </div>
-        `).join("")
+      ${
+        sales.length === 0
+          ? "<p>No sales yet</p>"
+          : `
+            <div class="sales-table">
+              
+              <div class="sales-header">
+                <span>Product</span>
+                <span>Qty</span>
+                <span>Total</span>
+                <span>Date</span>
+              </div>
+
+              ${sales.map((s: any) => `
+                <div class="sales-row">
+                  <span>${s.productName}</span>
+                  <span>${s.quantity}</span>
+                  <span>₱${Number(s.totalAmount).toFixed(2)}</span>
+                  <span>${new Date(s.dateISO).toLocaleDateString()}</span>
+                </div>
+              `).join("")}
+
+            </div>
+          `
       }
     </div>
   `;
 
+  /* ===== FORM ===== */
   const form = document.getElementById("sale-form") as HTMLFormElement;
   const msg = document.getElementById("msg") as HTMLDivElement;
 
@@ -68,7 +93,7 @@ export async function renderSales(root: HTMLElement) {
 
       msg.innerHTML = `<p style="color:green;">Sale recorded!</p>`;
 
-      renderSales(root); // refresh UI
+      renderSales(root); // refresh
     } catch (err: any) {
       msg.innerHTML = `<p style="color:red;">${err.message}</p>`;
     }

@@ -9,20 +9,19 @@ import { renderRegister } from "./ui/RegisterView.js";
 
 type View = "dashboard" | "products" | "sales" | "reports" | "suppliers" | "credit";
 
-/* ROOT */
+/* =========================
+   ROOT ELEMENTS (SAFE)
+========================= */
 const root = document.getElementById("app") as HTMLElement;
 const loginScreen = document.getElementById("login-screen") as HTMLElement;
 const mainApp = document.getElementById("main-app") as HTMLElement;
 
-/* PROFILE */
-const profileBtn = document.getElementById("profile-btn") as HTMLButtonElement;
-const profileMenu = document.getElementById("profile-menu") as HTMLDivElement;
-const logoutBtn = document.getElementById("logout-btn") as HTMLButtonElement;
-
-/* PROFILE MODAL */
-const editBtn = document.getElementById("edit-profile-btn") as HTMLButtonElement;
-const modal = document.getElementById("profile-modal") as HTMLDivElement;
-const saveBtn = document.getElementById("save-profile") as HTMLButtonElement;
+/* =========================
+   SAFE QUERY FUNCTION
+========================= */
+function el<T extends HTMLElement>(id: string): T | null {
+  return document.getElementById(id) as T | null;
+}
 
 /* =========================
    ACTIVE SIDEBAR
@@ -32,7 +31,7 @@ function setActive(id: string) {
     btn.classList.remove("active");
   });
 
-  document.getElementById(id)?.classList.add("active");
+  el(id)?.classList.add("active");
 }
 
 /* =========================
@@ -50,32 +49,90 @@ async function show(view: View) {
     if (view === "credit") renderCredit(root);
 
   } catch (err) {
-    console.error(err);
+    console.error("VIEW ERROR:", err);
 
     root.innerHTML = `
       <div class="card">
         <h2 style="color:red;">Something broke</h2>
-        <p>Check backend connection.</p>
+        <p>Check backend / API</p>
       </div>
     `;
   }
 }
 
 /* =========================
-   PROFILE DROPDOWN
+   PROFILE SYSTEM (SAFE INIT)
 ========================= */
-if (profileBtn && profileMenu) {
-  profileBtn.onclick = () => {
-    profileMenu.classList.toggle("show");
-  };
+function initProfile() {
+  const profileBtn = el<HTMLButtonElement>("profile-btn");
+  const profileMenu = el<HTMLDivElement>("profile-menu");
+  const logoutBtn = el<HTMLButtonElement>("logout-btn");
 
+  const editBtn = el<HTMLButtonElement>("edit-profile-btn");
+  const modal = el<HTMLDivElement>("profile-modal");
+  const saveBtn = el<HTMLButtonElement>("save-profile");
+
+  /* TOGGLE MENU */
+  profileBtn?.addEventListener("click", () => {
+    profileMenu?.classList.toggle("show");
+  });
+
+  /* CLOSE OUTSIDE */
   window.addEventListener("click", (e) => {
     if (
+      profileBtn &&
+      profileMenu &&
       !profileBtn.contains(e.target as Node) &&
       !profileMenu.contains(e.target as Node)
     ) {
       profileMenu.classList.remove("show");
     }
+  });
+
+  /* LOAD USER */
+  loadUser();
+
+  /* EDIT PROFILE */
+  editBtn?.addEventListener("click", () => {
+    modal?.classList.add("show");
+
+    const user = JSON.parse(localStorage.getItem("tp_user") || "{}");
+
+    const usernameInput = el<HTMLInputElement>("edit-username");
+    if (usernameInput) {
+      usernameInput.value = user.username || "";
+    }
+  });
+
+  /* SAVE PROFILE */
+  saveBtn?.addEventListener("click", () => {
+    const username = el<HTMLInputElement>("edit-username")?.value || "";
+    const password = el<HTMLInputElement>("edit-password")?.value || "";
+
+    let user = JSON.parse(localStorage.getItem("tp_user") || "{}");
+
+    user.username = username;
+    if (password) user.password = password;
+
+    localStorage.setItem("tp_user", JSON.stringify(user));
+
+    alert("Profile updated!");
+
+    modal?.classList.remove("show");
+    loadUser();
+  });
+
+  /* CLOSE MODAL */
+  window.addEventListener("click", (e) => {
+    if (e.target === modal) {
+      modal?.classList.remove("show");
+    }
+  });
+
+  /* LOGOUT (IMPORTANT FIX) */
+  logoutBtn?.addEventListener("click", () => {
+    localStorage.removeItem("tp_logged_in"); // DO NOT CLEAR ALL
+    showLogin();
   });
 }
 
@@ -85,52 +142,12 @@ if (profileBtn && profileMenu) {
 function loadUser() {
   const user = JSON.parse(localStorage.getItem("tp_user") || "{}");
 
-  const name = document.getElementById("user-name");
-  const role = document.getElementById("user-role");
+  const name = el("user-name");
+  const role = el("user-role");
 
   if (name) name.textContent = user.username || "User";
   if (role) role.textContent = user.role || "Store Owner";
 }
-
-/* =========================
-   PROFILE EDIT (FIXED)
-========================= */
-editBtn?.addEventListener("click", () => {
-  modal?.classList.add("show");
-
-  const user = JSON.parse(localStorage.getItem("tp_user") || "{}");
-
-  (document.getElementById("edit-username") as HTMLInputElement).value =
-    user.username || "";
-});
-
-saveBtn?.addEventListener("click", () => {
-  const username = (document.getElementById("edit-username") as HTMLInputElement).value;
-  const password = (document.getElementById("edit-password") as HTMLInputElement).value;
-
-  let user = JSON.parse(localStorage.getItem("tp_user") || "{}");
-
-  user.username = username;
-
-  if (password) {
-    user.password = password;
-  }
-
-  localStorage.setItem("tp_user", JSON.stringify(user));
-
-  alert("Profile updated!");
-
-  modal?.classList.remove("show");
-
-  loadUser();
-});
-
-/* CLOSE MODAL */
-window.addEventListener("click", (e) => {
-  if (e.target === modal) {
-    modal?.classList.remove("show");
-  }
-});
 
 /* =========================
    AUTH FLOW
@@ -139,7 +156,7 @@ function startApp() {
   loginScreen.innerHTML = "";
   mainApp.style.display = "flex";
 
-  loadUser();
+  initProfile(); // ✅ VERY IMPORTANT (fix blank issue)
 
   setActive("nav-dashboard");
   show("dashboard");
@@ -158,42 +175,34 @@ function showRegister() {
 /* =========================
    NAVIGATION
 ========================= */
-document.getElementById("nav-dashboard")?.addEventListener("click", () => {
+el("nav-dashboard")?.addEventListener("click", () => {
   setActive("nav-dashboard");
   show("dashboard");
 });
 
-document.getElementById("nav-products")?.addEventListener("click", () => {
+el("nav-products")?.addEventListener("click", () => {
   setActive("nav-products");
   show("products");
 });
 
-document.getElementById("nav-sales")?.addEventListener("click", () => {
+el("nav-sales")?.addEventListener("click", () => {
   setActive("nav-sales");
   show("sales");
 });
 
-document.getElementById("nav-reports")?.addEventListener("click", () => {
+el("nav-reports")?.addEventListener("click", () => {
   setActive("nav-reports");
   show("reports");
 });
 
-document.getElementById("nav-suppliers")?.addEventListener("click", () => {
+el("nav-suppliers")?.addEventListener("click", () => {
   setActive("nav-suppliers");
   show("suppliers");
 });
 
-document.getElementById("nav-credit")?.addEventListener("click", () => {
+el("nav-credit")?.addEventListener("click", () => {
   setActive("nav-credit");
   show("credit");
-});
-
-/* =========================
-   LOGOUT
-========================= */
-logoutBtn?.addEventListener("click", () => {
-  localStorage.clear();
-  showLogin();
 });
 
 /* =========================

@@ -1,13 +1,15 @@
-export function renderLogin(onLogin: () => void, goRegister: () => void) {
+export function renderLogin(startApp: Function, showRegister: Function) {
   const root = document.getElementById("login-screen") as HTMLElement;
 
   root.innerHTML = `
     <div class="login-wrapper">
       <div class="login-card">
+
         <h2>Welcome Back</h2>
         <p class="subtitle">Login to your store</p>
 
         <form id="login-form">
+
           <div class="form-group">
             <label>Username</label>
             <input id="username" required />
@@ -19,29 +21,37 @@ export function renderLogin(onLogin: () => void, goRegister: () => void) {
           </div>
 
           <button class="full-btn">Login</button>
+
         </form>
 
         <div class="divider"></div>
 
         <p class="register-text">No account?</p>
-        <button class="secondary-btn" id="go-register">Create Account</button>
+        <button class="secondary-btn" id="go-register">
+          Create Account
+        </button>
+
       </div>
     </div>
   `;
 
-  document.getElementById("go-register")!.onclick = goRegister;
-
   document.getElementById("login-form")!.onsubmit = (e) => {
     e.preventDefault();
 
-    const user = {
-      username: (document.getElementById("username") as HTMLInputElement).value,
-      role: "Store Owner"
-    };
+    const username = (document.getElementById("username") as HTMLInputElement).value;
+    const password = (document.getElementById("password") as HTMLInputElement).value;
 
-    localStorage.setItem("tp_logged_in", "true");
-    localStorage.setItem("tp_user", JSON.stringify(user));
+    const user = JSON.parse(localStorage.getItem("tp_user") || "{}");
 
-    onLogin();
+    if (user.username === username && user.password === password) {
+      localStorage.setItem("tp_logged_in", "true");
+      startApp();
+    } else {
+      alert("Invalid credentials");
+    }
+  };
+
+  document.getElementById("go-register")!.onclick = () => {
+    showRegister();
   };
 }

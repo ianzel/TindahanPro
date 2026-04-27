@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 import { Credit } from './credit.entity';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class CreditsService {
@@ -10,12 +10,16 @@ export class CreditsService {
     private repo: Repository<Credit>,
   ) {}
 
-  create(data: any) {
-    const c = this.repo.create(data);
-    return this.repo.save(c);
-  }
-
   findAll() {
     return this.repo.find({ order: { id: 'DESC' } });
+  }
+
+  create(data: Partial<Credit>) {
+    const credit = this.repo.create(data);
+    return this.repo.save(credit);
+  }
+
+  markPaid(id: number) {
+    return this.repo.update(id, { isPaid: true });
   }
 }

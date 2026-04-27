@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param } from '@nestjs/common';
 import { CreditsService } from './credits.service';
 
 @Controller('credits')
@@ -13,5 +13,10 @@ export class CreditsController {
   @Post()
   create(@Body() data: any) {
     return this.service.create(data);
+  }
+
+  @Patch(':id/pay')
+  pay(@Param('id') id: number) {
+    return this.service.markPaid(Number(id));
   }
 }

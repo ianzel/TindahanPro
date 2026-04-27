@@ -18,11 +18,12 @@ export async function renderDashboard(root: HTMLElement) {
       </select>
     </div>
 
-    <!-- ✅ CARDED STATS -->
+    <!-- STATS -->
     <div class="stats-row" id="stats"></div>
 
+    <!-- CHART + LOW STOCK -->
     <div class="grid-2">
-      <div class="card">
+      <div class="card chart-card">
         <h3>Sales Trend</h3>
         <canvas id="salesChart"></canvas>
       </div>
@@ -39,7 +40,8 @@ export async function renderDashboard(root: HTMLElement) {
       </div>
     </div>
 
-    <div class="card pie-card">
+    <!-- PIE -->
+    <div class="card chart-card">
       <h3>Sales Distribution</h3>
       <canvas id="pieChart"></canvas>
     </div>
@@ -70,10 +72,10 @@ export async function renderDashboard(root: HTMLElement) {
     return sales;
   }
 
-  /* ===== STATS (NOW IN CARDS) ===== */
+  /* ===== STATS ===== */
   function renderStats(filtered: any[]) {
-    const totalSales = filtered.reduce((sum, s) => sum + Number(s.totalAmount), 0);
-    const totalProfit = filtered.reduce((sum, s) => sum + Number(s.profit), 0);
+    const totalSales = filtered.reduce((sum, s) => sum + Number(s.totalAmount || 0), 0);
+    const totalProfit = filtered.reduce((sum, s) => sum + Number(s.profit || 0), 0);
 
     document.getElementById("stats")!.innerHTML = `
       <div class="stat-card blue">
@@ -96,78 +98,58 @@ export async function renderDashboard(root: HTMLElement) {
   /* ===== CHARTS ===== */
   function drawCharts(filtered: any[]) {
     const ChartJS = (window as any).Chart;
-    if (!ChartJS) {
-      console.error("Chart.js NOT LOADED");
-      return;
-    }
+    if (!ChartJS) return;
 
-    /* DESTROY OLD */
     if (salesChart) salesChart.destroy();
     if (pieChart) pieChart.destroy();
 
-    /* ===== LINE ===== */
+    /* LINE */
     const grouped: Record<string, number> = {};
-
     filtered.forEach((s: any) => {
       const d = new Date(s.dateISO).toLocaleDateString();
       grouped[d] = (grouped[d] || 0) + Number(s.totalAmount);
     });
 
-    const lineCanvas = document.getElementById("salesChart") as HTMLCanvasElement;
+    const ctx = document.getElementById("salesChart") as HTMLCanvasElement;
 
-    if (lineCanvas) {
-      salesChart = new ChartJS(lineCanvas, {
+    if (ctx) {
+      salesChart = new ChartJS(ctx, {
         type: "line",
         data: {
           labels: Object.keys(grouped),
-          datasets: [
-            {
-              label: "Sales",
-              data: Object.values(grouped),
-              borderWidth: 2,
-              tension: 0.3
-            }
-          ]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false
+          datasets: [{
+            label: "Sales",
+            data: Object.values(grouped),
+            borderWidth: 2,
+            tension: 0.3
+          }]
         }
       });
     }
 
-    /* ===== PIE (FIXED) ===== */
+    /* PIE */
     const productMap: Record<string, number> = {};
-
     filtered.forEach((s: any) => {
       const name = s.productName || "Unknown";
       productMap[name] = (productMap[name] || 0) + Number(s.totalAmount);
     });
 
-    const pieCanvas = document.getElementById("pieChart") as HTMLCanvasElement;
+    const pieCtx = document.getElementById("pieChart") as HTMLCanvasElement;
 
-    if (pieCanvas && Object.keys(productMap).length > 0) {
-      pieChart = new ChartJS(pieCanvas, {
+    if (pieCtx && Object.keys(productMap).length > 0) {
+      pieChart = new ChartJS(pieCtx, {
         type: "doughnut",
         data: {
           labels: Object.keys(productMap),
-          datasets: [
-            {
-              data: Object.values(productMap)
-            }
-          ]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false
+          datasets: [{
+            data: Object.values(productMap)
+          }]
         }
       });
-    } else {
-      pieCanvas?.insertAdjacentHTML("afterend", "<p>No sales data</p>");
     }
   }
 
-  /* ===== INIT ===== */
+  /* INIT */
   const filter = document.getElementById("filter") as HTMLSelectElement;
 
   function update(type: string) {
@@ -178,5 +160,5 @@ export async function renderDashboard(root: HTMLElement) {
 
   filter.addEventListener("change", () => update(filter.value));
 
-  update("today");
+  setTimeout(() => update("today"), 100);
 }
