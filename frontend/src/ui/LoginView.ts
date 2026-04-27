@@ -1,57 +1,56 @@
-export function renderLogin(startApp: Function, showRegister: Function) {
+export function renderLogin(onLogin: Function, goRegister: Function) {
   const root = document.getElementById("login-screen") as HTMLElement;
 
   root.innerHTML = `
-    <div class="login-wrapper">
-      <div class="login-card">
+    <div class="auth-wrapper">
+
+      <div class="auth-card">
 
         <h2>Welcome Back</h2>
-        <p class="subtitle">Login to your store</p>
+        <p class="subtitle">Login to your TindahanPro account</p>
 
         <form id="login-form">
 
-          <div class="form-group">
+          <div class="input-group">
             <label>Username</label>
-            <input id="username" required />
+            <input id="username" placeholder="Enter username" required />
           </div>
 
-          <div class="form-group">
+          <div class="input-group">
             <label>Password</label>
-            <input id="password" type="password" required />
+            <input id="password" type="password" placeholder="Enter password" required />
           </div>
 
-          <button class="full-btn">Login</button>
+          <button class="auth-btn">Login</button>
 
         </form>
 
-        <div class="divider"></div>
-
-        <p class="register-text">No account?</p>
-        <button class="secondary-btn" id="go-register">
-          Create Account
-        </button>
+        <p class="switch-text">
+          Don't have an account?
+          <span id="go-register">Register</span>
+        </p>
 
       </div>
+
     </div>
   `;
 
+  /* LOGIN */
   document.getElementById("login-form")!.onsubmit = (e) => {
     e.preventDefault();
 
     const username = (document.getElementById("username") as HTMLInputElement).value;
     const password = (document.getElementById("password") as HTMLInputElement).value;
 
-    const user = JSON.parse(localStorage.getItem("tp_user") || "{}");
+    const saved = JSON.parse(localStorage.getItem("tp_user") || "{}");
 
-    if (user.username === username && user.password === password) {
+    if (username === saved.username && password === saved.password) {
       localStorage.setItem("tp_logged_in", "true");
-      startApp();
+      onLogin();
     } else {
       alert("Invalid credentials");
     }
   };
 
-  document.getElementById("go-register")!.onclick = () => {
-    showRegister();
-  };
+  document.getElementById("go-register")!.onclick = () => goRegister();
 }

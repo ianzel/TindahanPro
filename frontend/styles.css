@@ -585,3 +585,87 @@ canvas {
   padding: 5px 10px;
   border-radius: 6px;
 }
+
+/* ===== AUTH SYSTEM (MODERN UI) ===== */
+
+.auth-wrapper {
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+}
+
+.auth-card {
+  background: white;
+  padding: 35px 30px;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 380px;
+  box-shadow: 0 15px 40px rgba(0,0,0,0.25);
+  text-align: center;
+}
+
+.auth-card h2 {
+  margin-bottom: 5px;
+  color: #0f172a;
+}
+
+.subtitle {
+  font-size: 13px;
+  color: #64748b;
+  margin-bottom: 25px;
+}
+
+/* INPUT GROUP */
+.input-group {
+  text-align: left;
+  margin-bottom: 15px;
+}
+
+.input-group label {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.input-group input {
+  width: 100%;
+  padding: 10px;
+  margin-top: 5px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.input-group input:focus {
+  border-color: #3b82f6;
+}
+
+/* BUTTON */
+.auth-btn {
+  width: 100%;
+  padding: 10px;
+  margin-top: 10px;
+  border: none;
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: white;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.auth-btn:hover {
+  opacity: 0.9;
+}
+
+/* SWITCH TEXT */
+.switch-text {
+  font-size: 13px;
+  margin-top: 15px;
+  color: #64748b;
+}
+
+.switch-text span {
+  color: #3b82f6;
+  cursor: pointer;
+  font-weight: 600;
+}

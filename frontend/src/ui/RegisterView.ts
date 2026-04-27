@@ -1,45 +1,57 @@
-export function renderRegister(showLogin: Function) {
+export function renderRegister(goLogin: Function) {
   const root = document.getElementById("login-screen") as HTMLElement;
 
   root.innerHTML = `
-    <div class="login-wrapper">
-      <div class="login-card">
+    <div class="auth-wrapper">
+
+      <div class="auth-card">
 
         <h2>Create Account</h2>
-        <p class="subtitle">Start your store system</p>
+        <p class="subtitle">Start managing your store</p>
 
         <form id="register-form">
 
-          <div class="form-group">
+          <div class="input-group">
             <label>Username</label>
-            <input id="username" required />
+            <input id="reg-username" placeholder="Enter username" required />
           </div>
 
-          <div class="form-group">
+          <div class="input-group">
             <label>Password</label>
-            <input id="password" type="password" required />
+            <input id="reg-password" type="password" placeholder="Enter password" required />
           </div>
 
-          <button class="full-btn">Register</button>
+          <div class="input-group">
+            <label>Confirm Password</label>
+            <input id="reg-confirm" type="password" placeholder="Confirm password" required />
+          </div>
+
+          <button class="auth-btn">Register</button>
 
         </form>
 
-        <div class="divider"></div>
-
-        <p class="register-text">Already have account?</p>
-        <button class="secondary-btn" id="go-login">
-          Login
-        </button>
+        <p class="switch-text">
+          Already have an account?
+          <span id="go-login">Login</span>
+        </p>
 
       </div>
+
     </div>
   `;
 
+  /* REGISTER */
   document.getElementById("register-form")!.onsubmit = (e) => {
     e.preventDefault();
 
-    const username = (document.getElementById("username") as HTMLInputElement).value;
-    const password = (document.getElementById("password") as HTMLInputElement).value;
+    const username = (document.getElementById("reg-username") as HTMLInputElement).value;
+    const password = (document.getElementById("reg-password") as HTMLInputElement).value;
+    const confirm = (document.getElementById("reg-confirm") as HTMLInputElement).value;
+
+    if (password !== confirm) {
+      alert("Passwords do not match");
+      return;
+    }
 
     const user = {
       username,
@@ -48,13 +60,10 @@ export function renderRegister(showLogin: Function) {
     };
 
     localStorage.setItem("tp_user", JSON.stringify(user));
-    localStorage.setItem("tp_logged_in", "true");
 
-    alert("Account created!");
-    location.reload();
+    alert("Registered successfully!");
+    goLogin();
   };
 
-  document.getElementById("go-login")!.onclick = () => {
-    showLogin();
-  };
+  document.getElementById("go-login")!.onclick = () => goLogin();
 }
