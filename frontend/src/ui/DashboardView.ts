@@ -28,16 +28,24 @@ export async function renderDashboard(root: HTMLElement) {
         <canvas id="salesChart"></canvas>
       </div>
 
-      <div class="card">
-        <h3>Low Stock Items</h3>
-        ${
-          lowStock.length === 0
-            ? "<p>No low stock items</p>"
-            : `<ul>
-                ${lowStock.map((p: any) => `<li>${p.name} (${p.stock})</li>`).join("")}
-              </ul>`
-        }
-      </div>
+     <div class="card">
+  <h3>Low Stock Items</h3>
+
+  ${
+    lowStock.length === 0
+      ? "<p>No low stock items</p>"
+      : `
+        <ul class="low-stock-list">
+          ${lowStock.map((p: any) => `
+            <li>
+              <span>${p.name}</span>
+              <strong>${p.stock}</strong>
+            </li>
+          `).join("")}
+        </ul>
+      `
+  }
+</div>
     </div>
 
     <!-- PIE -->

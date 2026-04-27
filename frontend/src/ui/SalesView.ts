@@ -6,11 +6,10 @@ export async function renderSales(root: HTMLElement) {
   const sales = await SalesService.list();
 
   root.innerHTML = `
-    <!-- ===== RECORD SALE ===== -->
     <div class="card">
       <h2>Record Sale</h2>
 
-      <form id="sale-form" class="horizontal-form">
+      <form id="sale-form" class="sales-form">
 
         <div class="form-group">
           <label>Product</label>
@@ -25,50 +24,42 @@ export async function renderSales(root: HTMLElement) {
 
         <div class="form-group">
           <label>Quantity</label>
-          <input id="qty" type="number" placeholder="Enter quantity" required />
+          <input id="qty" type="number" placeholder="Enter quantity" />
         </div>
 
-        <button type="submit" class="btn-primary">
-          Record
-        </button>
+        <button type="submit" class="btn-primary">Record Sale</button>
       </form>
 
       <div id="msg"></div>
     </div>
 
-    <!-- ===== SALES HISTORY ===== -->
     <div class="card">
       <h3>Sales History</h3>
 
-      ${
-        sales.length === 0
-          ? "<p>No sales yet</p>"
-          : `
-            <div class="sales-table">
-              
-              <div class="sales-header">
-                <span>Product</span>
-                <span>Qty</span>
-                <span>Total</span>
-                <span>Date</span>
+      <div class="sales-table">
+        <div class="sales-header">
+          <span>Product</span>
+          <span>Qty</span>
+          <span>Total</span>
+          <span>Date</span>
+        </div>
+
+        ${
+          sales.length === 0
+            ? `<p>No sales yet</p>`
+            : sales.map((s: any) => `
+              <div class="sales-row">
+                <span>${s.productName}</span>
+                <span>${s.quantity}</span>
+                <span>₱${Number(s.totalAmount).toFixed(2)}</span>
+                <span>${new Date(s.dateISO).toLocaleDateString()}</span>
               </div>
-
-              ${sales.map((s: any) => `
-                <div class="sales-row">
-                  <span>${s.productName}</span>
-                  <span>${s.quantity}</span>
-                  <span>₱${Number(s.totalAmount).toFixed(2)}</span>
-                  <span>${new Date(s.dateISO).toLocaleDateString()}</span>
-                </div>
-              `).join("")}
-
-            </div>
-          `
-      }
+            `).join("")
+        }
+      </div>
     </div>
   `;
 
-  /* ===== FORM ===== */
   const form = document.getElementById("sale-form") as HTMLFormElement;
   const msg = document.getElementById("msg") as HTMLDivElement;
 
@@ -83,17 +74,15 @@ export async function renderSales(root: HTMLElement) {
       (document.getElementById("qty") as HTMLInputElement).value
     );
 
-    if (qty <= 0) {
+    if (!qty || qty <= 0) {
       msg.innerHTML = `<p style="color:red;">Invalid quantity</p>`;
       return;
     }
 
     try {
       await SalesService.record(productId, qty);
-
       msg.innerHTML = `<p style="color:green;">Sale recorded!</p>`;
-
-      renderSales(root); // refresh
+      renderSales(root);
     } catch (err: any) {
       msg.innerHTML = `<p style="color:red;">${err.message}</p>`;
     }

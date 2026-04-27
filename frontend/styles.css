@@ -521,3 +521,67 @@ canvas {
 .btn-primary:hover {
   background: #2563eb;
 }
+
+/* LOW STOCK CLEAN */
+.low-stock-list {
+  list-style: none;
+  padding: 0;
+  margin-top: 10px;
+}
+
+.low-stock-list li {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 10px;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 14px;
+}
+
+.low-stock-list li span {
+  color: #334155;
+}
+
+.low-stock-list li strong {
+  color: #ef4444;
+}
+
+.product-table {
+  margin-top: 15px;
+}
+
+.product-header,
+.product-row {
+  display: grid;
+  grid-template-columns: 2fr 1.5fr 1fr 1fr 1.5fr;
+  padding: 10px 0;
+}
+
+.product-header {
+  font-weight: 600;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.product-row {
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.actions {
+  display: flex;
+  gap: 5px;
+}
+
+.edit-btn {
+  background: #3b82f6;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 6px;
+}
+
+.restock-btn {
+  background: #22c55e;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 6px;
+}
