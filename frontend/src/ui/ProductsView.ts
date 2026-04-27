@@ -1,8 +1,6 @@
 import { ProductService } from "../services/ProductService.js";
 
 export async function renderProducts(root: HTMLElement) {
-  root.innerHTML = `<p>Loading products...</p>`;
-
   const products = await ProductService.list();
 
   root.innerHTML = `
@@ -10,12 +8,12 @@ export async function renderProducts(root: HTMLElement) {
       <h2>Products</h2>
 
       <form id="product-form">
-        <input id="name" placeholder="Name" required />
+        <input id="name" placeholder="Product Name" required />
         <input id="category" placeholder="Category" required />
-        <input id="buyingPrice" type="number" placeholder="Buying Price" required />
-        <input id="sellingPrice" type="number" placeholder="Selling Price" required />
+        <input id="buy" type="number" placeholder="Buying Price" required />
+        <input id="sell" type="number" placeholder="Selling Price" required />
         <input id="stock" type="number" placeholder="Stock" required />
-        <input id="minStock" type="number" placeholder="Min Stock" required />
+        <input id="min" type="number" placeholder="Min Stock" required />
 
         <button type="submit">Add Product</button>
       </form>
@@ -24,18 +22,34 @@ export async function renderProducts(root: HTMLElement) {
     <div class="card">
       <h3>Product List</h3>
 
-      <ul>
-        ${
-          products.length === 0
-            ? "<li>No products yet</li>"
-            : products
-                .map(
-                  (p: any) =>
-                    `<li>${p.name} - Stock: ${p.stock}</li>`
-                )
-                .join("")
-        }
-      </ul>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Stock</th>
+            <th>Price</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${products.map((p: any) => `
+            <tr>
+              <td>${p.name}</td>
+              <td>${p.stock}</td>
+              <td>₱${Number(p.sellingPrice).toFixed(2)}</td>
+              <td>
+                ${
+                  p.stock <= 0
+                    ? `<span class="status-out">Out</span>`
+                    : p.stock <= p.minStock
+                    ? `<span class="status-low">Low</span>`
+                    : `<span class="status-ok">OK</span>`
+                }
+              </td>
+            </tr>
+          `).join("")}
+        </tbody>
+      </table>
     </div>
   `;
 
@@ -44,19 +58,20 @@ export async function renderProducts(root: HTMLElement) {
   form.onsubmit = async (e) => {
     e.preventDefault();
 
-    try {
-      await ProductService.create({
-        name: (document.getElementById("name") as HTMLInputElement).value,
-        category: (document.getElementById("category") as HTMLInputElement).value,
-        buyingPrice: Number((document.getElementById("buyingPrice") as HTMLInputElement).value),
-        sellingPrice: Number((document.getElementById("sellingPrice") as HTMLInputElement).value),
-        stock: Number((document.getElementById("stock") as HTMLInputElement).value),
-        minStock: Number((document.getElementById("minStock") as HTMLInputElement).value),
-      });
+    const data = {
+      name: (document.getElementById("name") as HTMLInputElement).value,
+      category: (document.getElementById("category") as HTMLInputElement).value,
+      buyingPrice: Number((document.getElementById("buy") as HTMLInputElement).value),
+      sellingPrice: Number((document.getElementById("sell") as HTMLInputElement).value),
+      stock: Number((document.getElementById("stock") as HTMLInputElement).value),
+      minStock: Number((document.getElementById("min") as HTMLInputElement).value),
+    };
 
+    try {
+      await ProductService.create(data);
       renderProducts(root); // refresh
     } catch {
-      alert("Error saving product");
+      alert("Failed to add product");
     }
   };
 }

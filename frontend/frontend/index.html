@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TindahanPro</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <div id="login-screen"></div>
+
+  <div id="main-app" style="display:none;">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <h2>TindahanPro</h2>
+
+      <button id="nav-dashboard">Dashboard</button>
+      <button id="nav-products">Products</button>
+      <button id="nav-sales">Sales</button>
+      <button id="nav-reports">Reports</button>
+      <button id="nav-suppliers">Suppliers</button>
+      <button id="nav-credit">Credit</button>
+
+      <div class="spacer"></div>
+
+      <button id="logout-btn" class="logout">Logout</button>
+    </aside>
+
+    <!-- MAIN -->
+    <div class="main">
+      <div class="header"></div>
+      <main id="app" class="content"></main>
+    </div>
+
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script type="module" src="dist/app.js"></script>
+</body>
+</html>

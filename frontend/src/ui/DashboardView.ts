@@ -1,32 +1,27 @@
 import { ReportService } from "../services/ReportService.js";
 
+let salesChart: any = null;
+let pieChart: any = null;
+
 export async function renderDashboard(root: HTMLElement) {
-  const summary = await ReportService.todaySummary();
   const lowStock = await ReportService.lowStockItems();
   const sales = await ReportService.getAllSales();
 
   root.innerHTML = `
-    <h2>Dashboard</h2>
+    <div class="filter-bar">
+      <h2>Dashboard</h2>
 
-    <div class="grid">
-      <div class="stat blue">
-        <h3>Total Sales Today</h3>
-        <p>₱${summary.totalSales.toFixed(2)}</p>
-      </div>
-
-      <div class="stat green">
-        <h3>Total Profit</h3>
-        <p>₱${summary.totalProfit.toFixed(2)}</p>
-      </div>
-
-      <div class="stat orange">
-        <h3>Transactions</h3>
-        <p>${summary.transactions}</p>
-      </div>
+      <select id="filter">
+        <option value="today">Today</option>
+        <option value="week">This Week</option>
+        <option value="month">This Month</option>
+      </select>
     </div>
 
-    <div style="display:grid; grid-template-columns: 2fr 1fr; gap:20px; margin-top:20px;">
-      
+    <!-- ✅ CARDED STATS -->
+    <div class="stats-row" id="stats"></div>
+
+    <div class="grid-2">
       <div class="card">
         <h3>Sales Trend</h3>
         <canvas id="salesChart"></canvas>
@@ -38,85 +33,150 @@ export async function renderDashboard(root: HTMLElement) {
           lowStock.length === 0
             ? "<p>No low stock items</p>"
             : `<ul>
-                ${lowStock
-                  .map((p: any) => `<li>${p.name} (${p.stock})</li>`)
-                  .join("")}
+                ${lowStock.map((p: any) => `<li>${p.name} (${p.stock})</li>`).join("")}
               </ul>`
         }
       </div>
-
     </div>
 
-    <div class="card">
+    <div class="card pie-card">
       <h3>Sales Distribution</h3>
       <canvas id="pieChart"></canvas>
     </div>
   `;
 
-  /* ===== SAFETY: wait for DOM ===== */
-  setTimeout(() => {
-    const ChartJS = (window as any).Chart;
+  /* ===== FILTER ===== */
+  function filterSales(type: string) {
+    const now = new Date();
 
+    if (type === "today") {
+      return sales.filter((s: any) =>
+        new Date(s.dateISO).toDateString() === now.toDateString()
+      );
+    }
+
+    if (type === "week") {
+      const d = new Date();
+      d.setDate(now.getDate() - 7);
+      return sales.filter((s: any) => new Date(s.dateISO) >= d);
+    }
+
+    if (type === "month") {
+      const d = new Date();
+      d.setMonth(now.getMonth() - 1);
+      return sales.filter((s: any) => new Date(s.dateISO) >= d);
+    }
+
+    return sales;
+  }
+
+  /* ===== STATS (NOW IN CARDS) ===== */
+  function renderStats(filtered: any[]) {
+    const totalSales = filtered.reduce((sum, s) => sum + Number(s.totalAmount), 0);
+    const totalProfit = filtered.reduce((sum, s) => sum + Number(s.profit), 0);
+
+    document.getElementById("stats")!.innerHTML = `
+      <div class="stat-card blue">
+        <h4>Sales</h4>
+        <p>₱${totalSales.toFixed(2)}</p>
+      </div>
+
+      <div class="stat-card green">
+        <h4>Profit</h4>
+        <p>₱${totalProfit.toFixed(2)}</p>
+      </div>
+
+      <div class="stat-card orange">
+        <h4>Transactions</h4>
+        <p>${filtered.length}</p>
+      </div>
+    `;
+  }
+
+  /* ===== CHARTS ===== */
+  function drawCharts(filtered: any[]) {
+    const ChartJS = (window as any).Chart;
     if (!ChartJS) {
-      console.error("Chart.js not loaded");
+      console.error("Chart.js NOT LOADED");
       return;
     }
 
-    /* ===== LINE CHART ===== */
+    /* DESTROY OLD */
+    if (salesChart) salesChart.destroy();
+    if (pieChart) pieChart.destroy();
+
+    /* ===== LINE ===== */
     const grouped: Record<string, number> = {};
 
-    sales.forEach((s: any) => {
-      const date = new Date(s.dateISO).toLocaleDateString();
-      grouped[date] = (grouped[date] || 0) + Number(s.totalAmount);
+    filtered.forEach((s: any) => {
+      const d = new Date(s.dateISO).toLocaleDateString();
+      grouped[d] = (grouped[d] || 0) + Number(s.totalAmount);
     });
 
-    const labels = Object.keys(grouped);
-    const data = Object.values(grouped);
+    const lineCanvas = document.getElementById("salesChart") as HTMLCanvasElement;
 
-    const ctx = document.getElementById("salesChart") as HTMLCanvasElement;
-
-    if (ctx) {
-      new ChartJS(ctx, {
+    if (lineCanvas) {
+      salesChart = new ChartJS(lineCanvas, {
         type: "line",
         data: {
-          labels,
+          labels: Object.keys(grouped),
           datasets: [
             {
               label: "Sales",
-              data,
+              data: Object.values(grouped),
               borderWidth: 2,
               tension: 0.3
             }
           ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false
         }
       });
     }
 
-    /* ===== PIE CHART ===== */
+    /* ===== PIE (FIXED) ===== */
     const productMap: Record<string, number> = {};
 
-    sales.forEach((s: any) => {
+    filtered.forEach((s: any) => {
       const name = s.productName || "Unknown";
       productMap[name] = (productMap[name] || 0) + Number(s.totalAmount);
     });
 
-    const pieLabels = Object.keys(productMap);
-    const pieData = Object.values(productMap);
+    const pieCanvas = document.getElementById("pieChart") as HTMLCanvasElement;
 
-    const pieCtx = document.getElementById("pieChart") as HTMLCanvasElement;
-
-    if (pieCtx) {
-      new ChartJS(pieCtx, {
+    if (pieCanvas && Object.keys(productMap).length > 0) {
+      pieChart = new ChartJS(pieCanvas, {
         type: "doughnut",
         data: {
-          labels: pieLabels,
+          labels: Object.keys(productMap),
           datasets: [
             {
-              data: pieData
+              data: Object.values(productMap)
             }
           ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false
         }
       });
+    } else {
+      pieCanvas?.insertAdjacentHTML("afterend", "<p>No sales data</p>");
     }
-  }, 100);
+  }
+
+  /* ===== INIT ===== */
+  const filter = document.getElementById("filter") as HTMLSelectElement;
+
+  function update(type: string) {
+    const filtered = filterSales(type);
+    renderStats(filtered);
+    drawCharts(filtered);
+  }
+
+  filter.addEventListener("change", () => update(filter.value));
+
+  update("today");
 }

@@ -16,40 +16,42 @@ export class SalesService {
   ) {}
 
   async create(data: CreateSaleDto) {
-    const product = await this.productRepository.findOne({
-      where: { id: data.productId },
-    });
+  const product = await this.productRepository.findOne({
+    where: { id: data.productId },
+  });
 
-    if (!product) throw new NotFoundException('Product not found');
-    if (data.quantity <= 0) throw new BadRequestException('Invalid quantity');
-
-    if (product.stock < data.quantity) {
-      throw new BadRequestException(`Not enough stock (${product.stock})`);
-    }
-
-    const unitPrice = Number(product.sellingPrice);
-    const unitCost = Number(product.buyingPrice);
-
-    const totalAmount = unitPrice * data.quantity;
-    const profit = (unitPrice - unitCost) * data.quantity;
-
-    // ✅ reduce stock
-    product.stock -= data.quantity;
-    await this.productRepository.save(product);
-
-    // ✅ include productName
-    const sale = this.saleRepository.create({
-      productId: data.productId,
-      productName: product.name,
-      quantity: data.quantity,
-      unitPrice,
-      unitCost,
-      totalAmount,
-      profit,
-    });
-
-    return await this.saleRepository.save(sale);
+  if (!product) {
+    throw new NotFoundException('Product not found');
   }
+
+  if (data.quantity <= 0) {
+    throw new BadRequestException('Quantity must be greater than 0');
+  }
+
+  if (product.stock < data.quantity) {
+    throw new BadRequestException(`Not enough stock. Available: ${product.stock}`);
+  }
+
+  const unitPrice = Number(product.sellingPrice);
+  const unitCost = Number(product.buyingPrice);
+  const totalAmount = unitPrice * data.quantity;
+  const profit = (unitPrice - unitCost) * data.quantity;
+
+  product.stock -= data.quantity;
+  await this.productRepository.save(product);
+
+  const sale = this.saleRepository.create({
+    productId: data.productId,
+    productName: product.name, // ✅ FIX
+    quantity: data.quantity,
+    unitPrice,
+    unitCost,
+    totalAmount,
+    profit,
+  });
+
+  return await this.saleRepository.save(sale);
+}
 
   async findAll() {
     return await this.saleRepository.find({

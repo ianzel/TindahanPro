@@ -25,8 +25,6 @@ export class Sale {
 
   @CreateDateColumn({ type: 'datetime' })
   dateISO: Date;
-
-  /* ✅ FIX: make optional */
-  @Column({ nullable: true })
-  productName: string;
+  @Column()
+productName: string;
 }
