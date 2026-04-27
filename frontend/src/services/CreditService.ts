@@ -1,29 +1,34 @@
-import { Credit } from "../models/Credit.js";
-import { StorageService } from "./StorageService.js";
-
-const KEY = "tp_credit";
+const API = "http://localhost:3000/credits";
 
 export class CreditService {
-  static list(): Credit[] {
-    return StorageService.get<Credit[]>(KEY, []);
+
+  static async list() {
+    const res = await fetch(API);
+
+    if (!res.ok) {
+      throw new Error("Failed to load credits");
+    }
+
+    return res.json();
   }
 
-  static saveAll(credits: Credit[]): void {
-    StorageService.set(KEY, credits);
-  }
-
-  static add(c: Credit): void {
-    const credits = this.list();
-    credits.push(c);
-    this.saveAll(credits);
-  }
-
-  static markPaid(id: string): void {
-    const credits: Credit[] = this.list().map((c): Credit => {
-      if (c.id !== id) return c;
-      return { ...c, status: "paid" }; // "paid" is literal union value
+  static async create(data: {
+    customer: string;
+    amount: number;
+    dueDate: string;
+  }) {
+    const res = await fetch(API, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
     });
 
-    this.saveAll(credits);
+    if (!res.ok) {
+      throw new Error("Failed to create credit");
+    }
+
+    return res.json();
   }
 }

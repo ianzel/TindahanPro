@@ -429,3 +429,48 @@ canvas {
   padding: 6px 10px;
   border-radius: 6px;
 }
+
+/* ===== HORIZONTAL FORM ===== */
+.horizontal-form {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.horizontal-form input {
+  flex: 1;
+  min-width: 150px;
+}
+
+/* ===== LIST STYLE ===== */
+.list {
+  margin-top: 10px;
+}
+
+.list-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid #e5e7eb;
+  gap: 10px;
+}
+
+.list-row span {
+  flex: 1;
+}
+
+/* DELETE BUTTON */
+.delete-btn {
+  background: #ef4444;
+  border: none;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.delete-btn:hover {
+  background: #dc2626;
+}

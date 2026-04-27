@@ -1,27 +1,40 @@
-import { Supplier } from "../models/Supplier.js";
-import { StorageService } from "./StorageService.js";
-
-const KEY = "tp_suppliers";
+const API = "http://localhost:3000/suppliers";
 
 export class SupplierService {
 
-  static list(): Supplier[] {
-    return StorageService.get<Supplier[]>(KEY, []);
+  static async list() {
+    const res = await fetch(API);
+
+    if (!res.ok) {
+      throw new Error("Failed to load suppliers");
+    }
+
+    return res.json();
   }
 
-  static saveAll(suppliers: Supplier[]): void {
-    StorageService.set(KEY, suppliers);
+  static async create(data: { name: string; contact: string }) {
+    const res = await fetch(API, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!res.ok) {
+      throw new Error("Failed to create supplier");
+    }
+
+    return res.json();
   }
 
-  static add(s: Supplier): void {
-    const suppliers = this.list();
-    suppliers.push(s);
-    this.saveAll(suppliers);
-  }
+  static async delete(id: number) {
+    const res = await fetch(`${API}/${id}`, {
+      method: "DELETE",
+    });
 
-  static remove(id: string): void {
-    const suppliers = this.list().filter(s => s.id !== id);
-    this.saveAll(suppliers);
+    if (!res.ok) {
+      throw new Error("Failed to delete supplier");
+    }
   }
-
 }

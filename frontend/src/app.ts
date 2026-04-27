@@ -9,7 +9,7 @@ import { renderRegister } from "./ui/RegisterView.js";
 
 type View = "dashboard" | "products" | "sales" | "reports" | "suppliers" | "credit";
 
-/* ROOT ELEMENTS */
+/* ROOT */
 const root = document.getElementById("app") as HTMLElement;
 const loginScreen = document.getElementById("login-screen") as HTMLElement;
 const mainApp = document.getElementById("main-app") as HTMLElement;
@@ -19,11 +19,16 @@ const profileBtn = document.getElementById("profile-btn") as HTMLButtonElement;
 const profileMenu = document.getElementById("profile-menu") as HTMLDivElement;
 const logoutBtn = document.getElementById("logout-btn") as HTMLButtonElement;
 
+/* PROFILE MODAL */
+const editBtn = document.getElementById("edit-profile-btn") as HTMLButtonElement;
+const modal = document.getElementById("profile-modal") as HTMLDivElement;
+const saveBtn = document.getElementById("save-profile") as HTMLButtonElement;
+
 /* =========================
-   ACTIVE SIDEBAR FUNCTION
+   ACTIVE SIDEBAR
 ========================= */
 function setActive(id: string) {
-  document.querySelectorAll(".nav-btn").forEach(btn => {
+  document.querySelectorAll(".sidebar button").forEach(btn => {
     btn.classList.remove("active");
   });
 
@@ -45,12 +50,12 @@ async function show(view: View) {
     if (view === "credit") renderCredit(root);
 
   } catch (err) {
-    console.error("VIEW ERROR:", err);
+    console.error(err);
 
     root.innerHTML = `
       <div class="card">
         <h2 style="color:red;">Something broke</h2>
-        <p>Check your backend or API connection.</p>
+        <p>Check backend connection.</p>
       </div>
     `;
   }
@@ -88,6 +93,46 @@ function loadUser() {
 }
 
 /* =========================
+   PROFILE EDIT (FIXED)
+========================= */
+editBtn?.addEventListener("click", () => {
+  modal?.classList.add("show");
+
+  const user = JSON.parse(localStorage.getItem("tp_user") || "{}");
+
+  (document.getElementById("edit-username") as HTMLInputElement).value =
+    user.username || "";
+});
+
+saveBtn?.addEventListener("click", () => {
+  const username = (document.getElementById("edit-username") as HTMLInputElement).value;
+  const password = (document.getElementById("edit-password") as HTMLInputElement).value;
+
+  let user = JSON.parse(localStorage.getItem("tp_user") || "{}");
+
+  user.username = username;
+
+  if (password) {
+    user.password = password;
+  }
+
+  localStorage.setItem("tp_user", JSON.stringify(user));
+
+  alert("Profile updated!");
+
+  modal?.classList.remove("show");
+
+  loadUser();
+});
+
+/* CLOSE MODAL */
+window.addEventListener("click", (e) => {
+  if (e.target === modal) {
+    modal?.classList.remove("show");
+  }
+});
+
+/* =========================
    AUTH FLOW
 ========================= */
 function startApp() {
@@ -96,7 +141,7 @@ function startApp() {
 
   loadUser();
 
-  setActive("nav-dashboard"); // default highlight
+  setActive("nav-dashboard");
   show("dashboard");
 }
 
@@ -111,7 +156,7 @@ function showRegister() {
 }
 
 /* =========================
-   NAVIGATION (WITH ACTIVE)
+   NAVIGATION
 ========================= */
 document.getElementById("nav-dashboard")?.addEventListener("click", () => {
   setActive("nav-dashboard");

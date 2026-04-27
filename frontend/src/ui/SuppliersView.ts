@@ -15,10 +15,11 @@ export function renderSuppliers(root: HTMLElement) {
     <div class="card">
       <h2>Suppliers</h2>
 
-      <form id="supplier-form" class="form-grid">
+      <!-- HORIZONTAL FORM -->
+      <form id="supplier-form" class="horizontal-form">
         <input id="name" placeholder="Supplier Name" required />
         <input id="contact" placeholder="Contact Number" required />
-        <button type="submit">Add Supplier</button>
+        <button type="submit">Add</button>
       </form>
     </div>
 
@@ -28,19 +29,22 @@ export function renderSuppliers(root: HTMLElement) {
       ${
         suppliers.length === 0
           ? "<p>No suppliers yet</p>"
-          : suppliers.map((s: any, i: number) => `
-              <div class="list-item">
-                <div>
-                  <strong>${s.name}</strong>
-                  <p>${s.contact}</p>
+          : `
+            <div class="list">
+              ${suppliers.map((s: any, i: number) => `
+                <div class="list-row">
+                  <span><strong>${s.name}</strong></span>
+                  <span>${s.contact}</span>
+                  <button data-id="${i}" class="delete-btn">Delete</button>
                 </div>
-                <button data-id="${i}" class="delete-btn">Delete</button>
-              </div>
-            `).join("")
+              `).join("")}
+            </div>
+          `
       }
     </div>
   `;
 
+  /* ADD */
   const form = document.getElementById("supplier-form") as HTMLFormElement;
 
   form.onsubmit = (e) => {
@@ -55,6 +59,7 @@ export function renderSuppliers(root: HTMLElement) {
     renderSuppliers(root);
   };
 
+  /* DELETE */
   document.querySelectorAll(".delete-btn").forEach(btn => {
     btn.addEventListener("click", () => {
       const id = Number((btn as HTMLElement).getAttribute("data-id"));

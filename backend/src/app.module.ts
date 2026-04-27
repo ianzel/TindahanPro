@@ -3,11 +3,13 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { Product } from './products/product.entity';
 import { Sale } from './sales/sale.entity';
-import { User } from './auth/user.entity';
+import { Supplier } from './suppliers/supplier.entity';
+import { Credit } from './credits/credit.entity';
 
-import { ProductsModule } from './products/products.module'; // ✅ ADD THIS
-import { SalesModule } from './sales/sales.module'; // (if you have)
-import { AuthModule } from './auth/auth.module'; // (if you have)
+import { ProductsModule } from './products/products.module';
+import { SalesModule } from './sales/sales.module';
+import { SuppliersModule } from './suppliers/suppliers.module';
+import { CreditsModule } from './credits/credits.module';
 
 @Module({
   imports: [
@@ -18,13 +20,14 @@ import { AuthModule } from './auth/auth.module'; // (if you have)
       username: 'root',
       password: '',
       database: 'tindahanpro_db',
-      entities: [Product, Sale, User],
+      entities: [Product, Sale, Supplier, Credit],
       synchronize: true,
     }),
 
-    ProductsModule, // ✅ VERY IMPORTANT
+    ProductsModule,
     SalesModule,
-    AuthModule,
+    SuppliersModule,
+    CreditsModule,
   ],
 })
 export class AppModule {}

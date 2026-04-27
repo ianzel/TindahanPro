@@ -1,4 +1,4 @@
-const KEY = "tp_credit";
+const KEY = "tp_credits";
 
 function getCredits() {
   return JSON.parse(localStorage.getItem(KEY) || "[]");
@@ -13,12 +13,14 @@ export function renderCredit(root: HTMLElement) {
 
   root.innerHTML = `
     <div class="card">
-      <h2>Customer Credit</h2>
+      <h2>Credits</h2>
 
-      <form id="credit-form" class="form-grid">
-        <input id="name" placeholder="Customer Name" required />
+      <!-- HORIZONTAL FORM -->
+      <form id="credit-form" class="horizontal-form">
+        <input id="customer" placeholder="Customer Name" required />
         <input id="amount" type="number" placeholder="Amount" required />
-        <button type="submit">Add Credit</button>
+        <input id="due" type="date" required />
+        <button type="submit">Add</button>
       </form>
     </div>
 
@@ -27,36 +29,40 @@ export function renderCredit(root: HTMLElement) {
 
       ${
         credits.length === 0
-          ? "<p>No credit records</p>"
-          : credits.map((c: any, i: number) => `
-              <div class="list-item">
-                <strong>${c.name}</strong>
-                <span class="badge ${c.amount > 0 ? "red" : "green"}">
-                  ₱${c.amount}
-                </span>
-                <button data-id="${i}" class="delete-btn">Delete</button>
-              </div>
-            `).join("")
+          ? "<p>No credits yet</p>"
+          : `
+            <div class="list">
+              ${credits.map((c: any, i: number) => `
+                <div class="list-row">
+                  <span>${c.customer}</span>
+                  <span>₱${c.amount}</span>
+                  <span>${c.due}</span>
+                  <button data-id="${i}" class="delete-btn">Delete</button>
+                </div>
+              `).join("")}
+            </div>
+          `
       }
     </div>
   `;
 
+  /* ADD CREDIT */
   const form = document.getElementById("credit-form") as HTMLFormElement;
 
   form.onsubmit = (e) => {
     e.preventDefault();
 
-    const name = (document.getElementById("name") as HTMLInputElement).value;
-    const amount = Number(
-      (document.getElementById("amount") as HTMLInputElement).value
-    );
+    const customer = (document.getElementById("customer") as HTMLInputElement).value;
+    const amount = (document.getElementById("amount") as HTMLInputElement).value;
+    const due = (document.getElementById("due") as HTMLInputElement).value;
 
-    const updated = [...credits, { name, amount }];
+    const updated = [...credits, { customer, amount, due }];
     saveCredits(updated);
 
     renderCredit(root);
   };
 
+  /* DELETE */
   document.querySelectorAll(".delete-btn").forEach(btn => {
     btn.addEventListener("click", () => {
       const id = Number((btn as HTMLElement).getAttribute("data-id"));
