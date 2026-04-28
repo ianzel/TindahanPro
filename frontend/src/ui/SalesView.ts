@@ -5,6 +5,12 @@ export async function renderSales(root: HTMLElement) {
   const products = await ProductService.list();
   const sales = await SalesService.list();
 
+  const getStockClass = (stock: number) => {
+    if (stock === 0) return "status-out";
+    if (stock <= 5) return "status-low";
+    return "status-ok";
+  };
+
   root.innerHTML = `
     <div class="card">
       <h2>Record Sale</h2>
@@ -16,7 +22,7 @@ export async function renderSales(root: HTMLElement) {
           <select id="product">
             ${products.map((p: any) => `
               <option value="${p.id}">
-                ${p.name} (Stock: ${p.stock})
+                ${p.name} (${p.stock} stock)
               </option>
             `).join("")}
           </select>
@@ -46,7 +52,7 @@ export async function renderSales(root: HTMLElement) {
 
         ${
           sales.length === 0
-            ? `<p>No sales yet</p>`
+            ? `<p style="margin-top:10px;">No sales yet</p>`
             : sales.map((s: any) => `
               <div class="sales-row">
                 <span>${s.productName}</span>
@@ -81,8 +87,10 @@ export async function renderSales(root: HTMLElement) {
 
     try {
       await SalesService.record(productId, qty);
+
       msg.innerHTML = `<p style="color:green;">Sale recorded!</p>`;
-      renderSales(root);
+
+      renderSales(root); // refresh UI
     } catch (err: any) {
       msg.innerHTML = `<p style="color:red;">${err.message}</p>`;
     }

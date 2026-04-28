@@ -3,6 +3,13 @@ import { SalesService } from "../services/SalesService.js";
 export async function renderSales(root) {
     const products = await ProductService.list();
     const sales = await SalesService.list();
+    const getStockClass = (stock) => {
+        if (stock === 0)
+            return "status-out";
+        if (stock <= 5)
+            return "status-low";
+        return "status-ok";
+    };
     root.innerHTML = `
     <div class="card">
       <h2>Record Sale</h2>
@@ -14,7 +21,7 @@ export async function renderSales(root) {
           <select id="product">
             ${products.map((p) => `
               <option value="${p.id}">
-                ${p.name} (Stock: ${p.stock})
+                ${p.name} (${p.stock} stock)
               </option>
             `).join("")}
           </select>
@@ -43,7 +50,7 @@ export async function renderSales(root) {
         </div>
 
         ${sales.length === 0
-        ? `<p>No sales yet</p>`
+        ? `<p style="margin-top:10px;">No sales yet</p>`
         : sales.map((s) => `
               <div class="sales-row">
                 <span>${s.productName}</span>
@@ -68,7 +75,7 @@ export async function renderSales(root) {
         try {
             await SalesService.record(productId, qty);
             msg.innerHTML = `<p style="color:green;">Sale recorded!</p>`;
-            renderSales(root);
+            renderSales(root); // refresh UI
         }
         catch (err) {
             msg.innerHTML = `<p style="color:red;">${err.message}</p>`;
