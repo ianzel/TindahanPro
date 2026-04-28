@@ -6,28 +6,29 @@ import { renderSuppliers } from "./ui/SuppliersView.js";
 import { renderCredit } from "./ui/CreditView.js";
 import { renderLogin } from "./ui/LoginView.js";
 import { renderRegister } from "./ui/RegisterView.js";
+import { AuthService } from "./services/AuthService.js";
 
-type View = "dashboard" | "products" | "sales" | "reports" | "suppliers" | "credit";
+type View =
+  | "dashboard"
+  | "products"
+  | "sales"
+  | "reports"
+  | "suppliers"
+  | "credit";
 
-/* =========================
-   ROOT ELEMENTS (SAFE)
-========================= */
 const root = document.getElementById("app") as HTMLElement;
 const loginScreen = document.getElementById("login-screen") as HTMLElement;
 const mainApp = document.getElementById("main-app") as HTMLElement;
 
-/* =========================
-   SAFE QUERY FUNCTION
-========================= */
 function el<T extends HTMLElement>(id: string): T | null {
   return document.getElementById(id) as T | null;
 }
 
 /* =========================
-   ACTIVE SIDEBAR
+   ACTIVE NAV
 ========================= */
 function setActive(id: string) {
-  document.querySelectorAll(".sidebar button").forEach(btn => {
+  document.querySelectorAll(".nav-btn").forEach(btn => {
     btn.classList.remove("active");
   });
 
@@ -35,133 +36,101 @@ function setActive(id: string) {
 }
 
 /* =========================
-   SAFE VIEW RENDER
+   VIEW SWITCHER
 ========================= */
 async function show(view: View) {
-  try {
-    root.innerHTML = `<p>Loading...</p>`;
+  root.innerHTML = `<p>Loading...</p>`;
 
-    if (view === "dashboard") await renderDashboard(root);
-    if (view === "products") await renderProducts(root);
-    if (view === "sales") await renderSales(root);
-    if (view === "reports") await renderReports(root);
-    if (view === "suppliers") renderSuppliers(root);
-    if (view === "credit") renderCredit(root);
-
-  } catch (err) {
-    console.error("VIEW ERROR:", err);
-
-    root.innerHTML = `
-      <div class="card">
-        <h2 style="color:red;">Something broke</h2>
-        <p>Check backend / API</p>
-      </div>
-    `;
-  }
+  if (view === "dashboard") await renderDashboard(root);
+  if (view === "products") await renderProducts(root);
+  if (view === "sales") await renderSales(root);
+  if (view === "reports") await renderReports(root);
+  if (view === "suppliers") renderSuppliers(root);
+  if (view === "credit") renderCredit(root);
 }
 
 /* =========================
-   PROFILE SYSTEM (SAFE INIT)
+   PROFILE DROPDOWN (FIXED)
 ========================= */
 function initProfile() {
-  const profileBtn = el<HTMLButtonElement>("profile-btn");
-  const profileMenu = el<HTMLDivElement>("profile-menu");
-  const logoutBtn = el<HTMLButtonElement>("logout-btn");
+  const profile = document.getElementById("profile-avatar");
+  const menu = document.getElementById("profile-menu");
+  const logout = document.getElementById("logout-btn");
+  const editBtn = document.getElementById("edit-profile-btn");
+  const modal = document.getElementById("profile-modal");
 
-  const editBtn = el<HTMLButtonElement>("edit-profile-btn");
-  const modal = el<HTMLDivElement>("profile-modal");
-  const saveBtn = el<HTMLButtonElement>("save-profile");
+  if (!profile || !menu) return;
 
-  /* TOGGLE MENU */
-  profileBtn?.addEventListener("click", () => {
-    profileMenu?.classList.toggle("show");
+  // OPEN / CLOSE MENU
+  profile.addEventListener("click", (e) => {
+    e.stopPropagation();
+    menu.classList.toggle("show");
   });
 
-  /* CLOSE OUTSIDE */
-  window.addEventListener("click", (e) => {
-    if (
-      profileBtn &&
-      profileMenu &&
-      !profileBtn.contains(e.target as Node) &&
-      !profileMenu.contains(e.target as Node)
-    ) {
-      profileMenu.classList.remove("show");
-    }
+  document.addEventListener("click", () => {
+    menu.classList.remove("show");
   });
 
-  /* LOAD USER */
-  loadUser();
-
-  /* EDIT PROFILE */
+  // OPEN MODAL
   editBtn?.addEventListener("click", () => {
     modal?.classList.add("show");
-
-    const user = JSON.parse(localStorage.getItem("tp_user") || "{}");
-
-    const usernameInput = el<HTMLInputElement>("edit-username");
-    if (usernameInput) {
-      usernameInput.value = user.username || "";
-    }
+    menu.classList.remove("show");
   });
 
-  /* SAVE PROFILE */
-  saveBtn?.addEventListener("click", () => {
-    const username = el<HTMLInputElement>("edit-username")?.value || "";
-    const password = el<HTMLInputElement>("edit-password")?.value || "";
-
-    let user = JSON.parse(localStorage.getItem("tp_user") || "{}");
-
-    user.username = username;
-    if (password) user.password = password;
-
-    localStorage.setItem("tp_user", JSON.stringify(user));
-
-    alert("Profile updated!");
-
-    modal?.classList.remove("show");
-    loadUser();
-  });
-
-  /* CLOSE MODAL */
-  window.addEventListener("click", (e) => {
+  // CLOSE MODAL OUTSIDE CLICK
+  modal?.addEventListener("click", (e) => {
     if (e.target === modal) {
-      modal?.classList.remove("show");
+      modal.classList.remove("show");
     }
   });
 
-  /* LOGOUT (IMPORTANT FIX) */
-  logoutBtn?.addEventListener("click", () => {
-    localStorage.removeItem("tp_logged_in"); // DO NOT CLEAR ALL
-    showLogin();
+  // LOGOUT
+  logout?.addEventListener("click", () => {
+    AuthService.logout();
+    location.reload();
   });
 }
 
 /* =========================
-   LOAD USER INFO
+   DARK MODE (FIXED)
 ========================= */
-function loadUser() {
-  const user = JSON.parse(localStorage.getItem("tp_user") || "{}");
+function initDarkMode() {
+  const btn = document.getElementById("dark-toggle");
 
-  const name = el("user-name");
-  const role = el("user-role");
+  // restore
+  if (localStorage.getItem("dark") === "true") {
+    document.body.classList.add("dark");
+  }
 
-  if (name) name.textContent = user.username || "User";
-  if (role) role.textContent = user.role || "Store Owner";
+  btn?.addEventListener("click", (e) => {
+    e.stopPropagation();
+
+    document.body.classList.toggle("dark");
+
+    localStorage.setItem(
+      "dark",
+      String(document.body.classList.contains("dark"))
+    );
+  });
 }
 
 /* =========================
-   AUTH FLOW
+   START APP
 ========================= */
 function startApp() {
   loginScreen.innerHTML = "";
   mainApp.style.display = "flex";
 
-  initProfile(); // ✅ VERY IMPORTANT (fix blank issue)
+  initProfile();
+  initDarkMode();
 
   setActive("nav-dashboard");
   show("dashboard");
 }
 
+/* =========================
+   AUTH SCREENS
+========================= */
 function showLogin() {
   mainApp.style.display = "none";
   renderLogin(startApp, showRegister);
@@ -175,43 +144,16 @@ function showRegister() {
 /* =========================
    NAVIGATION
 ========================= */
-el("nav-dashboard")?.addEventListener("click", () => {
-  setActive("nav-dashboard");
-  show("dashboard");
-});
-
-el("nav-products")?.addEventListener("click", () => {
-  setActive("nav-products");
-  show("products");
-});
-
-el("nav-sales")?.addEventListener("click", () => {
-  setActive("nav-sales");
-  show("sales");
-});
-
-el("nav-reports")?.addEventListener("click", () => {
-  setActive("nav-reports");
-  show("reports");
-});
-
-el("nav-suppliers")?.addEventListener("click", () => {
-  setActive("nav-suppliers");
-  show("suppliers");
-});
-
-el("nav-credit")?.addEventListener("click", () => {
-  setActive("nav-credit");
-  show("credit");
-});
+["dashboard", "products", "sales", "reports", "suppliers", "credit"].forEach(
+  (v) => {
+    el(`nav-${v}`)?.addEventListener("click", () => {
+      setActive(`nav-${v}`);
+      show(v as View);
+    });
+  }
+);
 
 /* =========================
    AUTO LOGIN
 ========================= */
-const isLoggedIn = localStorage.getItem("tp_logged_in") === "true";
-
-if (isLoggedIn) {
-  startApp();
-} else {
-  showRegister();
-}
+AuthService.isLoggedIn() ? startApp() : showLogin();

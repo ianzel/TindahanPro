@@ -1,51 +1,30 @@
-import { Injectable, BadRequestException, UnauthorizedException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { User } from './user.entity';
-import { RegisterDto } from './dto/register.dto';
-import { LoginDto } from './dto/login.dto';
+import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class AuthService {
-  constructor(
-    @InjectRepository(User)
-    private userRepository: Repository<User>,
-  ) {}
+  private users: { username: string; password: string }[] = [];
 
-  async register(data: RegisterDto) {
-    const existing = await this.userRepository.findOne({
-      where: { username: data.username },
-    });
+  register(username: string, password: string) {
+    const existing = this.users.find(u => u.username === username);
 
     if (existing) {
-      throw new BadRequestException('Username already exists');
+      return { message: 'User already exists' };
     }
 
-    const user = this.userRepository.create({
-      username: data.username,
-      password: data.password,
-    });
+    this.users.push({ username, password });
 
-    await this.userRepository.save(user);
-
-    return { message: 'Registration successful' };
+    return { message: 'Registered successfully' };
   }
 
-  async login(data: LoginDto) {
-    const user = await this.userRepository.findOne({
-      where: { username: data.username },
-    });
+  login(username: string, password: string) {
+    const user = this.users.find(
+      u => u.username === username && u.password === password,
+    );
 
-    if (!user || user.password !== data.password) {
-      throw new UnauthorizedException('Invalid username or password');
+    if (!user) {
+      return { message: 'Invalid credentials' };
     }
 
-    return {
-      message: 'Login successful',
-      user: {
-        id: user.id,
-        username: user.username,
-      },
-    };
+    return { message: 'Login successful', user };
   }
 }

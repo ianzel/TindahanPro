@@ -1,69 +1,69 @@
-export function renderRegister(goLogin: Function) {
+import { AuthService } from "../services/AuthService.js";
+
+export function renderRegister(goLogin: () => void) {
   const root = document.getElementById("login-screen") as HTMLElement;
 
   root.innerHTML = `
     <div class="auth-wrapper">
-
       <div class="auth-card">
 
         <h2>Create Account</h2>
-        <p class="subtitle">Start managing your store</p>
+        <p class="subtitle">
+          Register your store owner account to start using TindahanPro.
+        </p>
 
-        <form id="register-form">
+        <div class="input-group">
+          <label>Owner Name</label>
+          <input id="reg-name" placeholder="Juan Dela Cruz" />
+        </div>
 
-          <div class="input-group">
-            <label>Username</label>
-            <input id="reg-username" placeholder="Enter username" required />
-          </div>
+        <div class="input-group">
+          <label>Email</label>
+          <input id="reg-email" type="email" placeholder="example@email.com" />
+        </div>
 
-          <div class="input-group">
-            <label>Password</label>
-            <input id="reg-password" type="password" placeholder="Enter password" required />
-          </div>
+        <div class="input-group">
+          <label>Password</label>
+          <input id="reg-pass" type="password" placeholder="Enter password" />
+        </div>
 
-          <div class="input-group">
-            <label>Confirm Password</label>
-            <input id="reg-confirm" type="password" placeholder="Confirm password" required />
-          </div>
+        <div class="input-group">
+          <label>Confirm Password</label>
+          <input id="reg-pass2" type="password" placeholder="Confirm password" />
+        </div>
 
-          <button class="auth-btn">Register</button>
-
-        </form>
+        <button class="auth-btn" id="register-btn">Register</button>
 
         <p class="switch-text">
           Already have an account?
           <span id="go-login">Login</span>
         </p>
 
-      </div>
+        <p id="reg-error" class="auth-error"></p>
 
+      </div>
     </div>
   `;
 
-  /* REGISTER */
-  document.getElementById("register-form")!.onsubmit = (e) => {
-    e.preventDefault();
+  document.getElementById("go-login")!.onclick = goLogin;
 
-    const username = (document.getElementById("reg-username") as HTMLInputElement).value;
-    const password = (document.getElementById("reg-password") as HTMLInputElement).value;
-    const confirm = (document.getElementById("reg-confirm") as HTMLInputElement).value;
+  document.getElementById("register-btn")!.onclick = async () => {
+    const name = (document.getElementById("reg-name") as HTMLInputElement).value;
+    const email = (document.getElementById("reg-email") as HTMLInputElement).value;
+    const pass = (document.getElementById("reg-pass") as HTMLInputElement).value;
+    const pass2 = (document.getElementById("reg-pass2") as HTMLInputElement).value;
 
-    if (password !== confirm) {
-      alert("Passwords do not match");
+    if (pass !== pass2) {
+      document.getElementById("reg-error")!.textContent = "Passwords do not match";
       return;
     }
 
-    const user = {
-      username,
-      password,
-      role: "Store Owner"
-    };
-
-    localStorage.setItem("tp_user", JSON.stringify(user));
-
-    alert("Registered successfully!");
-    goLogin();
+    try {
+      await AuthService.register(name, email, pass);
+      alert("Registered successfully!");
+      goLogin();
+    } catch {
+      document.getElementById("reg-error")!.textContent = "Registration failed";
+    }
   };
-
-  document.getElementById("go-login")!.onclick = () => goLogin();
 }

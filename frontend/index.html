@@ -1,80 +1,82 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>TindahanPro</title>
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles.css"/>
 </head>
+
 <body>
 
-  <div id="login-screen"></div>
+<div id="login-screen"></div>
 
-  <div id="main-app" style="display:none;">
+<div id="main-app" style="display:none;">
 
-    <!-- SIDEBAR -->
-   <aside class="sidebar">
-
-  <!-- LOGO -->
-  <div class="logo">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
     <h2>TindahanPro</h2>
-  </div>
 
-  <!-- NAV -->
-  <div class="nav">
-    <button id="nav-dashboard" class="nav-btn">Dashboard</button>
-    <button id="nav-products" class="nav-btn">Products</button>
-    <button id="nav-sales" class="nav-btn">Sales</button>
-    <button id="nav-reports" class="nav-btn">Reports</button>
-    <button id="nav-suppliers" class="nav-btn">Suppliers</button>
-    <button id="nav-credit" class="nav-btn">Credit</button>
-  </div>
+    <div class="nav">
+      <button id="nav-dashboard" class="nav-btn">Dashboard</button>
+      <button id="nav-products" class="nav-btn">Products</button>
+      <button id="nav-sales" class="nav-btn">Sales</button>
+      <button id="nav-reports" class="nav-btn">Reports</button>
+      <button id="nav-suppliers" class="nav-btn">Suppliers</button>
+      <button id="nav-credit" class="nav-btn">Credit</button>
+    </div>
+  </aside>
 
-</aside>
+  <!-- MAIN -->
+  <div class="main">
 
-    <!-- MAIN -->
-    <div class="main">
+    <!-- HEADER -->
+    <div class="header">
 
-      <!-- HEADER (ONLY PROFILE ICON NOW) -->
-      <div class="header">
-        <div></div> <!-- empty left -->
+      <div class="header-right">
 
-        <div class="header-right">
-          <div class="profile-wrapper">
-            <button id="profile-btn" class="profile-icon">👤</button>
+        <!-- DARK MODE -->
+        <button id="dark-toggle" class="profile-icon">🌙</button>
 
-            <div id="profile-menu" class="profile-menu">
-              <p id="user-name">User</p>
-              <p id="user-role">Store Owner</p>
+        <!-- PROFILE -->
+        <div class="profile-wrapper">
+          <img id="profile-avatar"
+               src="https://ui-avatars.com/api/?name=User"
+               class="profile-avatar"/>
 
-              <button id="edit-profile-btn">Edit Profile</button>
-              <button id="logout-btn">Logout</button>
-            </div>
+          <div id="profile-menu" class="profile-menu">
+            <p id="user-name">User</p>
+            <button id="edit-profile-btn">Edit Profile</button>
+            <button id="logout-btn">Logout</button>
           </div>
         </div>
+
       </div>
-
-      <!-- PROFILE MODAL -->
-      <div id="profile-modal" class="modal">
-        <div class="modal-content">
-          <h3>Edit Profile</h3>
-
-          <input id="edit-username" placeholder="Username" />
-          <input id="edit-password" type="password" placeholder="New Password" />
-
-          <div class="modal-actions">
-            <button id="save-profile" class="btn-save">Save</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- CONTENT -->
-      <main id="app" class="content"></main>
     </div>
 
-  </div>
+    <!-- PROFILE MODAL -->
+    <div id="profile-modal" class="modal">
+      <div class="modal-content">
 
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script type="module" src="dist/app.js"></script>
+        <h3>Edit Profile</h3>
+
+        <input id="edit-username" placeholder="Username"/>
+
+        <div class="modal-actions">
+          <button id="save-profile" class="btn-save">Save</button>
+          <button class="btn-cancel">Cancel</button>
+        </div>
+
+      </div>
+    </div>
+
+    <main id="app" class="content"></main>
+
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script type="module" src="dist/app.js"></script>
+
 </body>
 </html>

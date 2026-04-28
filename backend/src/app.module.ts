@@ -11,6 +11,8 @@ import { SalesModule } from './sales/sales.module';
 import { SuppliersModule } from './suppliers/suppliers.module';
 import { CreditsModule } from './credits/credits.module';
 
+import { AuthModule } from './auth/auth.module'; // 🔥 ADD THIS
+
 @Module({
   imports: [
     TypeOrmModule.forRoot({
@@ -23,6 +25,8 @@ import { CreditsModule } from './credits/credits.module';
       entities: [Product, Sale, Supplier, Credit],
       synchronize: true,
     }),
+
+    AuthModule, // 🔥 ADD THIS
 
     ProductsModule,
     SalesModule,
