@@ -14,11 +14,21 @@ export async function renderProducts(root) {
         <div class="field">
           <label>Category</label>
           <select id="category">
-            <option>Beverages</option>
-            <option>Snacks</option>
-            <option>Canned Goods</option>
-            <option>Toiletries</option>
-          </select>
+  <option>Beverages</option>
+  <option>Snacks</option>
+  <option>Canned Goods</option>
+  <option>Toiletries</option>
+  <option>Frozen Goods</option>
+  <option>Fresh Produce</option>
+  <option>Dairy Products</option>
+  <option>Condiments</option>
+  <option>Instant Foods</option>
+  <option>Bakery</option>
+  <option>Cleaning Supplies</option>
+  <option>Personal Care</option>
+  <option>Household Items</option>
+  <option>School Supplies</option>
+</select>
         </div>
 
         <div class="field">
