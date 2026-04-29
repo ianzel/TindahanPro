@@ -1,111 +1,134 @@
-export async function renderSales(root: HTMLElement) {
-  let products = JSON.parse(localStorage.getItem("products") || "[]");
-  let sales = JSON.parse(localStorage.getItem("sales") || "[]");
+import { ProductService } from "../services/ProductService.js";
+import { SalesService } from "../services/SalesService.js";
 
-  const getStockClass = (stock: number, minStock: number) => {
-    if (stock === 0) return "status-out";
-    if (stock <= minStock) return "status-low";
-    return "status-ok";
+export async function renderSales(root: HTMLElement) {
+  let products = await ProductService.list();
+  let sales = await SalesService.list();
+
+  let filteredDate = "";
+
+  const refreshData = async () => {
+    products = await ProductService.list();
+    sales = await SalesService.list();
   };
 
-  root.innerHTML = `
-    <div class="card">
-      <h2>Record Sale</h2>
+  const getFilteredSales = () => {
+    if (!filteredDate) return sales;
 
-      <form id="sale-form" class="sales-form">
+    return sales.filter((s: any) => {
+      const date = new Date(s.dateISO).toISOString().split("T")[0];
+      return date === filteredDate;
+    });
+  };
 
-        <div class="form-group">
-          <label>Product</label>
-          <select id="product">
-            ${products.map((p: any, i: number) => `
-              <option value="${i}">
-                ${p.name} (${p.stock} stock)
-              </option>
-            `).join("")}
-          </select>
-        </div>
+  const render = () => {
+    const filtered = getFilteredSales();
 
-        <div class="form-group">
-          <label>Quantity</label>
-          <input id="qty" type="number" placeholder="Enter quantity" />
-        </div>
+    root.innerHTML = `
+      <div class="card">
+        <h2>Record Sale</h2>
 
-        <button type="submit" class="btn-primary">Record Sale</button>
-      </form>
+        <form id="sale-form" class="sales-form">
 
-      <div id="msg"></div>
-    </div>
+          <div class="form-group">
+            <label>Product</label>
+            <select id="product">
+              ${products.map((p: any) => `
+                <option value="${p.id}">
+                  ${p.name} (${p.stock} stock)
+                </option>
+              `).join("")}
+            </select>
+          </div>
 
-    <div class="card">
-      <h3>Sales History</h3>
+          <div class="form-group">
+            <label>Quantity</label>
+            <input id="qty" type="number" />
+          </div>
 
-      <div class="sales-table">
-        <div class="sales-header">
-          <span>Product</span>
-          <span>Qty</span>
-          <span>Total</span>
-          <span>Date</span>
-        </div>
-
-        ${
-          sales.length === 0
-            ? `<p style="margin-top:10px;">No sales yet</p>`
-            : sales.map((s: any) => `
-              <div class="sales-row">
-                <span>${s.productName}</span>
-                <span>${s.quantity}</span>
-                <span>₱${Number(s.total).toFixed(2)}</span>
-                <span>${new Date(s.date).toLocaleDateString()}</span>
-              </div>
-            `).join("")
-        }
+          <button type="submit" class="btn-primary">Record Sale</button>
+        </form>
       </div>
-    </div>
-  `;
 
-  const form = document.getElementById("sale-form") as HTMLFormElement;
-  const msg = document.getElementById("msg") as HTMLDivElement;
+      <div class="card">
 
-  form.onsubmit = (e) => {
-    e.preventDefault();
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <h3>Sales History</h3>
 
-    const productIndex = Number(
-      (document.getElementById("product") as HTMLSelectElement).value
-    );
+          <div style="display:flex; gap:10px; align-items:center;">
+            <input id="dateFilter" type="date"
+              value="${filteredDate || ""}"
+              style="min-width:160px; padding:6px; border:1px solid #ddd; border-radius:6px;"
+            />
+            <button id="resetBtn" class="btn-cancel">Reset</button>
+          </div>
+        </div>
 
-    const qty = Number(
-      (document.getElementById("qty") as HTMLInputElement).value
-    );
+        <div class="sales-table">
+          <div class="sales-header">
+            <span>Product</span>
+            <span>Qty</span>
+            <span>Total</span>
+            <span>Date</span>
+          </div>
 
-    if (!qty || qty <= 0) {
-      msg.innerHTML = `<p style="color:red;">Invalid quantity</p>`;
-      return;
-    }
+          ${
+            filtered.length === 0
+              ? `<p style="margin-top:10px;">No sales found</p>`
+              : filtered.map((s: any) => `
+                  <div class="sales-row">
+                    <span>${s.productName}</span>
+                    <span>${s.quantity}</span>
+                    <span>₱${Number(s.totalAmount).toFixed(2)}</span>
+                    <span>${new Date(s.dateISO).toLocaleDateString()}</span>
+                  </div>
+                `).join("")
+          }
+        </div>
+      </div>
+    `;
 
-    const product = products[productIndex];
+    attachEvents();
+  };
 
-    if (qty > product.stock) {
-      msg.innerHTML = `<p style="color:red;">Not enough stock</p>`;
-      return;
-    }
+  const attachEvents = () => {
+    const form = document.getElementById("sale-form") as HTMLFormElement;
+    const dateInput = document.getElementById("dateFilter") as HTMLInputElement;
+    const resetBtn = document.getElementById("resetBtn") as HTMLButtonElement;
 
-    /* UPDATE STOCK */
-    product.stock -= qty;
+    form.onsubmit = async (e) => {
+      e.preventDefault();
 
-    /* RECORD SALE */
-    sales.push({
-      productName: product.name,
-      quantity: qty,
-      total: qty * product.sell,
-      date: new Date().toISOString(),
+      const productId = Number(
+        (document.getElementById("product") as HTMLSelectElement).value
+      );
+
+      const qty = Number(
+        (document.getElementById("qty") as HTMLInputElement).value
+      );
+
+      if (!qty || qty <= 0) return alert("Invalid quantity");
+
+      // 1. record sale
+      await SalesService.record(productId, qty);
+
+      // 2. refresh products + sales
+      await refreshData();
+
+      // 3. update UI
+      render();
+    };
+
+    dateInput?.addEventListener("change", () => {
+      filteredDate = dateInput.value;
+      render();
     });
 
-    /* SAVE */
-    localStorage.setItem("products", JSON.stringify(products));
-    localStorage.setItem("sales", JSON.stringify(sales));
-
-    msg.innerHTML = `<p style="color:green;">Sale recorded!</p>`;
-
-    renderSales(root);
+    resetBtn?.addEventListener("click", () => {
+      filteredDate = "";
+      render();
+    });
   };
+
+  render();
 }

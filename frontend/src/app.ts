@@ -3,7 +3,7 @@ import { renderProducts } from "./ui/ProductsView.js";
 import { renderSales } from "./ui/SalesView.js";
 import { renderReports } from "./ui/ReportsView.js";
 import { renderSuppliers } from "./ui/SuppliersView.js";
-import { renderCredit } from "./ui/CreditView.js";
+import { renderCredits } from "./ui/CreditView.js";
 import { renderLogin } from "./ui/LoginView.js";
 import { renderRegister } from "./ui/RegisterView.js";
 import { AuthService } from "./services/AuthService.js";
@@ -46,7 +46,7 @@ async function show(view: View) {
   if (view === "sales") await renderSales(root);
   if (view === "reports") await renderReports(root);
   if (view === "suppliers") renderSuppliers(root);
-  if (view === "credit") renderCredit(root);
+  if (view === "credit") renderCredits(root);
 }
 
 /* =========================
@@ -61,7 +61,6 @@ function initProfile() {
 
   if (!profile || !menu) return;
 
-  // OPEN / CLOSE MENU
   profile.addEventListener("click", (e) => {
     e.stopPropagation();
     menu.classList.toggle("show");
@@ -71,20 +70,17 @@ function initProfile() {
     menu.classList.remove("show");
   });
 
-  // OPEN MODAL
   editBtn?.addEventListener("click", () => {
     modal?.classList.add("show");
     menu.classList.remove("show");
   });
 
-  // CLOSE MODAL OUTSIDE CLICK
   modal?.addEventListener("click", (e) => {
     if (e.target === modal) {
       modal.classList.remove("show");
     }
   });
 
-  // LOGOUT
   logout?.addEventListener("click", () => {
     AuthService.logout();
     location.reload();
@@ -92,12 +88,11 @@ function initProfile() {
 }
 
 /* =========================
-   DARK MODE (FIXED)
+   DARK MODE
 ========================= */
 function initDarkMode() {
   const btn = document.getElementById("dark-toggle");
 
-  // restore
   if (localStorage.getItem("dark") === "true") {
     document.body.classList.add("dark");
   }
@@ -129,7 +124,7 @@ function startApp() {
 }
 
 /* =========================
-   AUTH SCREENS
+   AUTH
 ========================= */
 function showLogin() {
   mainApp.style.display = "none";
