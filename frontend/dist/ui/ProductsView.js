@@ -4,7 +4,6 @@ export async function renderProducts(root) {
     <div class="card">
       <h2>Add Product</h2>
 
-      <!-- VERTICAL FORM FIX -->
       <form id="form" class="horizontal-form" style="flex-direction: column; align-items: stretch; gap: 12px;">
 
         <div class="field">
@@ -55,7 +54,7 @@ export async function renderProducts(root) {
     <div class="card">
       <h3>Product List</h3>
 
-      <div class="product-header" style="display:grid; grid-template-columns: 2fr 1.5fr 1fr 1fr 1fr 1fr 120px; gap:10px; align-items:center;">
+      <div class="product-header" style="display:grid; grid-template-columns: 2fr 1.5fr 1fr 1fr 1fr 1fr 120px; gap:10px;">
         <span>Name</span>
         <span>Category</span>
         <span>Buy</span>
@@ -65,41 +64,36 @@ export async function renderProducts(root) {
         <span style="text-align:right;">Actions</span>
       </div>
 
-      ${products
-        .map((p, i) => {
+      ${products.map((p, i) => {
         let status = "OK";
-        let statusColor = "#22c55e";
+        let color = "#22c55e";
         if (p.stock <= 0) {
             status = "OUT";
-            statusColor = "#ef4444";
+            color = "#ef4444";
         }
         else if (p.stock <= p.minStock) {
             status = "LOW";
-            statusColor = "#f59e0b";
+            color = "#f59e0b";
         }
         return `
-          <div class="product-row" style="display:grid; grid-template-columns: 2fr 1.5fr 1fr 1fr 1fr 1fr 120px; gap:10px; align-items:center; padding:10px 0; border-bottom:1px solid #f1f5f9;">
-            
+          <div class="product-row" style="display:grid; grid-template-columns: 2fr 1.5fr 1fr 1fr 1fr 1fr 120px; gap:10px; align-items:center;">
             <span>${p.name}</span>
             <span>${p.category}</span>
             <span>₱${p.buy}</span>
             <span>₱${p.sell}</span>
             <span>${p.stock}</span>
 
-            <!-- STATUS -->
-            <span style="font-weight:600; color:${statusColor}">
+            <span style="color:${color}; font-weight:600;">
               ${status}
             </span>
 
-            <!-- ACTIONS (RIGHT ALIGNED FIX) -->
-            <div class="actions" style="display:flex; justify-content:flex-end; gap:8px;">
-              <button class="icon-btn edit-btn" data-id="${i}" style="color:#2563eb;">✏️</button>
-             <button class="icon-btn delete-btn" data-id="${i}" title="Delete">🗑</button>
+            <div style="display:flex; justify-content:flex-end; gap:8px;">
+              <button class="edit-btn" data-id="${i}">✏️</button>
+              <button class="delete-btn" data-id="${i}">🗑</button>
             </div>
           </div>
         `;
-    })
-        .join("")}
+    }).join("")}
     </div>
 
     <!-- EDIT MODAL -->
@@ -127,10 +121,10 @@ export async function renderProducts(root) {
           <input id="e_stock" type="number" />
         </div>
 
-        <div class="modal-actions">
-          <button id="cancelEdit" class="btn-cancel">Cancel</button>
-          <button id="saveEdit" class="btn-save">Save</button>
-        </div>
+       <div class="modal-actions" style="display:flex; justify-content:flex-end; gap:10px; margin-top:15px;">
+  <button id="cancelEdit" class="btn-cancel">Cancel</button>
+  <button id="saveEdit" class="btn-save">Save</button>
+</div>
       </div>
     </div>
   `;
@@ -151,14 +145,19 @@ export async function renderProducts(root) {
         renderProducts(root);
     });
     /* =========================
-       MODAL + ACTIONS
+       MODAL + ACTIONS (FINAL FIX)
     ========================= */
     const modal = document.getElementById("editModal");
     let editIndex = -1;
     root.addEventListener("click", (e) => {
         const target = e.target;
-        if (target.classList.contains("edit-btn")) {
-            editIndex = Number(target.dataset.id);
+        const editBtn = target.closest(".edit-btn");
+        const deleteBtn = target.closest(".delete-btn");
+        const saveBtn = target.closest("#saveEdit");
+        const cancelBtn = target.closest("#cancelEdit");
+        /* EDIT */
+        if (editBtn) {
+            editIndex = Number(editBtn.dataset.id);
             const p = products[editIndex];
             document.getElementById("e_name").value = p.name;
             document.getElementById("e_buy").value = p.buy;
@@ -166,20 +165,26 @@ export async function renderProducts(root) {
             document.getElementById("e_stock").value = p.stock;
             modal.classList.add("show");
         }
-        if (target.classList.contains("delete-btn")) {
-            const id = Number(target.dataset.id);
+        /* DELETE */
+        if (deleteBtn) {
+            const id = Number(deleteBtn.dataset.id);
             products.splice(id, 1);
             localStorage.setItem("products", JSON.stringify(products));
             renderProducts(root);
         }
-        if (target.id === "cancelEdit") {
+        /* CANCEL */
+        if (cancelBtn) {
             modal.classList.remove("show");
         }
-        if (target.id === "saveEdit") {
-            products[editIndex].name = document.getElementById("e_name").value;
-            products[editIndex].buy = Number(document.getElementById("e_buy").value);
-            products[editIndex].sell = Number(document.getElementById("e_sell").value);
-            products[editIndex].stock = Number(document.getElementById("e_stock").value);
+        /* SAVE (FINAL FIX) */
+        if (saveBtn) {
+            if (editIndex === -1)
+                return;
+            const p = products[editIndex];
+            p.name = document.getElementById("e_name").value;
+            p.buy = Number(document.getElementById("e_buy").value);
+            p.sell = Number(document.getElementById("e_sell").value);
+            p.stock = Number(document.getElementById("e_stock").value);
             localStorage.setItem("products", JSON.stringify(products));
             modal.classList.remove("show");
             renderProducts(root);
