@@ -1,13 +1,10 @@
-import { ProductService } from "../services/ProductService.js";
-import { SalesService } from "../services/SalesService.js";
-
 export async function renderSales(root: HTMLElement) {
-  const products = await ProductService.list();
-  const sales = await SalesService.list();
+  let products = JSON.parse(localStorage.getItem("products") || "[]");
+  let sales = JSON.parse(localStorage.getItem("sales") || "[]");
 
-  const getStockClass = (stock: number) => {
+  const getStockClass = (stock: number, minStock: number) => {
     if (stock === 0) return "status-out";
-    if (stock <= 5) return "status-low";
+    if (stock <= minStock) return "status-low";
     return "status-ok";
   };
 
@@ -20,8 +17,8 @@ export async function renderSales(root: HTMLElement) {
         <div class="form-group">
           <label>Product</label>
           <select id="product">
-            ${products.map((p: any) => `
-              <option value="${p.id}">
+            ${products.map((p: any, i: number) => `
+              <option value="${i}">
                 ${p.name} (${p.stock} stock)
               </option>
             `).join("")}
@@ -57,8 +54,8 @@ export async function renderSales(root: HTMLElement) {
               <div class="sales-row">
                 <span>${s.productName}</span>
                 <span>${s.quantity}</span>
-                <span>₱${Number(s.totalAmount).toFixed(2)}</span>
-                <span>${new Date(s.dateISO).toLocaleDateString()}</span>
+                <span>₱${Number(s.total).toFixed(2)}</span>
+                <span>${new Date(s.date).toLocaleDateString()}</span>
               </div>
             `).join("")
         }
@@ -69,10 +66,10 @@ export async function renderSales(root: HTMLElement) {
   const form = document.getElementById("sale-form") as HTMLFormElement;
   const msg = document.getElementById("msg") as HTMLDivElement;
 
-  form.onsubmit = async (e) => {
+  form.onsubmit = (e) => {
     e.preventDefault();
 
-    const productId = Number(
+    const productIndex = Number(
       (document.getElementById("product") as HTMLSelectElement).value
     );
 
@@ -85,14 +82,30 @@ export async function renderSales(root: HTMLElement) {
       return;
     }
 
-    try {
-      await SalesService.record(productId, qty);
+    const product = products[productIndex];
 
-      msg.innerHTML = `<p style="color:green;">Sale recorded!</p>`;
-
-      renderSales(root); // refresh UI
-    } catch (err: any) {
-      msg.innerHTML = `<p style="color:red;">${err.message}</p>`;
+    if (qty > product.stock) {
+      msg.innerHTML = `<p style="color:red;">Not enough stock</p>`;
+      return;
     }
+
+    /* UPDATE STOCK */
+    product.stock -= qty;
+
+    /* RECORD SALE */
+    sales.push({
+      productName: product.name,
+      quantity: qty,
+      total: qty * product.sell,
+      date: new Date().toISOString(),
+    });
+
+    /* SAVE */
+    localStorage.setItem("products", JSON.stringify(products));
+    localStorage.setItem("sales", JSON.stringify(sales));
+
+    msg.innerHTML = `<p style="color:green;">Sale recorded!</p>`;
+
+    renderSales(root);
   };
 }

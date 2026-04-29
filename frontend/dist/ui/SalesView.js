@@ -1,12 +1,10 @@
-import { ProductService } from "../services/ProductService.js";
-import { SalesService } from "../services/SalesService.js";
 export async function renderSales(root) {
-    const products = await ProductService.list();
-    const sales = await SalesService.list();
-    const getStockClass = (stock) => {
+    let products = JSON.parse(localStorage.getItem("products") || "[]");
+    let sales = JSON.parse(localStorage.getItem("sales") || "[]");
+    const getStockClass = (stock, minStock) => {
         if (stock === 0)
             return "status-out";
-        if (stock <= 5)
+        if (stock <= minStock)
             return "status-low";
         return "status-ok";
     };
@@ -19,8 +17,8 @@ export async function renderSales(root) {
         <div class="form-group">
           <label>Product</label>
           <select id="product">
-            ${products.map((p) => `
-              <option value="${p.id}">
+            ${products.map((p, i) => `
+              <option value="${i}">
                 ${p.name} (${p.stock} stock)
               </option>
             `).join("")}
@@ -55,8 +53,8 @@ export async function renderSales(root) {
               <div class="sales-row">
                 <span>${s.productName}</span>
                 <span>${s.quantity}</span>
-                <span>₱${Number(s.totalAmount).toFixed(2)}</span>
-                <span>${new Date(s.dateISO).toLocaleDateString()}</span>
+                <span>₱${Number(s.total).toFixed(2)}</span>
+                <span>${new Date(s.date).toLocaleDateString()}</span>
               </div>
             `).join("")}
       </div>
@@ -64,21 +62,32 @@ export async function renderSales(root) {
   `;
     const form = document.getElementById("sale-form");
     const msg = document.getElementById("msg");
-    form.onsubmit = async (e) => {
+    form.onsubmit = (e) => {
         e.preventDefault();
-        const productId = Number(document.getElementById("product").value);
+        const productIndex = Number(document.getElementById("product").value);
         const qty = Number(document.getElementById("qty").value);
         if (!qty || qty <= 0) {
             msg.innerHTML = `<p style="color:red;">Invalid quantity</p>`;
             return;
         }
-        try {
-            await SalesService.record(productId, qty);
-            msg.innerHTML = `<p style="color:green;">Sale recorded!</p>`;
-            renderSales(root); // refresh UI
+        const product = products[productIndex];
+        if (qty > product.stock) {
+            msg.innerHTML = `<p style="color:red;">Not enough stock</p>`;
+            return;
         }
-        catch (err) {
-            msg.innerHTML = `<p style="color:red;">${err.message}</p>`;
-        }
+        /* UPDATE STOCK */
+        product.stock -= qty;
+        /* RECORD SALE */
+        sales.push({
+            productName: product.name,
+            quantity: qty,
+            total: qty * product.sell,
+            date: new Date().toISOString(),
+        });
+        /* SAVE */
+        localStorage.setItem("products", JSON.stringify(products));
+        localStorage.setItem("sales", JSON.stringify(sales));
+        msg.innerHTML = `<p style="color:green;">Sale recorded!</p>`;
+        renderSales(root);
     };
 }
