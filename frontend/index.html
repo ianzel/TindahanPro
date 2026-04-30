@@ -4,7 +4,11 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>TindahanPro</title>
+
   <link rel="stylesheet" href="styles.css"/>
+
+  <!-- IMPORTANT: Chart.js must load BEFORE app -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body>
@@ -36,7 +40,6 @@
     <div class="header">
       <div class="header-right">
 
-        <!-- DARK MODE -->
         <button id="dark-toggle" class="icon-btn">🌙</button>
 
         <!-- PROFILE -->
@@ -47,24 +50,23 @@
                class="profile-avatar"/>
 
           <!-- PROFILE MENU -->
-          <div id="profile-menu" class="profile-menu">
+          <div id="profile-menu" class="profile-menu hidden">
 
             <div class="profile-info">
               <p id="user-name">User</p>
               <small id="user-email">user@email.com</small>
             </div>
 
-            <button id="open-profile-edit">Edit Profile</button>
-            <button id="logout-btn">Logout</button>
+            <button id="open-profile-edit" class="profile-btn edit">Edit Profile</button>
+            <button id="logout-btn" class="profile-btn logout">Logout</button>
 
           </div>
-
         </div>
       </div>
     </div>
 
     <!-- MODAL -->
-    <div id="profile-modal" class="modal">
+    <div id="profile-modal" class="modal hidden">
 
       <div class="modal-content">
 
@@ -85,11 +87,13 @@
 
     </div>
 
+    <!-- CONTENT -->
     <main id="app" class="content"></main>
 
   </div>
 </div>
 
+<!-- APP SCRIPT -->
 <script type="module" src="dist/app.js"></script>
 
 </body>
