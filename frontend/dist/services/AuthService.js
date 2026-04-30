@@ -1,26 +1,32 @@
 import { post } from "../api.js";
+const USER_KEY = "tp_user";
+const LOGIN_KEY = "tp_logged_in";
 export class AuthService {
-    static login(username, password) {
-        return post("/auth/login", { username, password }).then(data => {
-            localStorage.setItem("tp_user", JSON.stringify(data));
-            localStorage.setItem("tp_logged_in", "true");
-            return data;
-        });
+    static async login(email, password) {
+        const data = await post("/auth/login", { email, password });
+        // IMPORTANT: store full user properly
+        localStorage.setItem(USER_KEY, JSON.stringify(data.user));
+        localStorage.setItem(LOGIN_KEY, "true");
+        return data;
     }
-    static async register(name, email, password) {
-        return fetch("http://localhost:3000/auth/register", {
+    static async register(username, email, password) {
+        const res = await fetch("http://localhost:3000/auth/register", {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ name, email, password }),
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username, email, password }),
         });
+        return res.json();
     }
     static logout() {
-        localStorage.removeItem("tp_user");
-        localStorage.removeItem("tp_logged_in");
+        localStorage.removeItem(USER_KEY);
+        localStorage.removeItem(LOGIN_KEY);
     }
     static isLoggedIn() {
-        return localStorage.getItem("tp_logged_in") === "true";
+        return localStorage.getItem(LOGIN_KEY) === "true"
+            && localStorage.getItem(USER_KEY) !== null;
+    }
+    static getUser() {
+        const raw = localStorage.getItem(USER_KEY);
+        return raw ? JSON.parse(raw) : null;
     }
 }

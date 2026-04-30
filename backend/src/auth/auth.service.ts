@@ -6,8 +6,8 @@ import * as bcrypt from 'bcrypt';
 export class AuthService {
   constructor(private usersService: UsersService) {}
 
-  async register(username: string, password: string) {
-    const existing = await this.usersService.findByUsername(username);
+  async register(username: string, email: string, password: string) {
+    const existing = await this.usersService.findByEmail(email);
 
     if (existing) {
       return { message: 'User already exists' };
@@ -15,16 +15,24 @@ export class AuthService {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    await this.usersService.create({
+    const user = await this.usersService.create({
       username,
+      email,
       password: hashedPassword,
     });
 
-    return { message: 'Registered successfully' };
+    return {
+      message: 'Registered successfully',
+      user: {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+      },
+    };
   }
 
-  async login(username: string, password: string) {
-    const user = await this.usersService.findByUsername(username);
+  async login(email: string, password: string) {
+    const user = await this.usersService.findByEmail(email);
 
     if (!user) {
       return { message: 'Invalid credentials' };
@@ -36,6 +44,13 @@ export class AuthService {
       return { message: 'Invalid credentials' };
     }
 
-    return { message: 'Login successful', user };
+    return {
+      message: 'Login successful',
+      user: {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+      },
+    };
   }
 }

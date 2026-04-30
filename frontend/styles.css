@@ -1004,3 +1004,156 @@ body.dark select {
   padding: 10px;
   border-radius: 8px;
 }
+
+/* =========================
+   BUTTON BASE
+========================= */
+button {
+  background-color: #4CAF50;
+  color: white;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #45a049;
+}
+
+/* =========================
+   PROFILE MENU FIX (ONLY ONE SYSTEM)
+========================= */
+.profile-menu {
+  display: none;
+  position: absolute;
+  top: 50px;
+  right: 0;
+  width: 180px;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+  padding: 10px;
+  z-index: 999;
+}
+
+/* ONLY THIS CONTROLS VISIBILITY */
+.profile-menu.show {
+  display: block;
+}
+
+/* PROFILE INFO */
+.profile-info {
+  margin-bottom: 8px;
+}
+
+/* =========================
+   GLOBAL BUTTON RESET (IMPORTANT)
+========================= */
+
+button {
+  font-family: inherit;
+  border: none;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+/* =========================
+   EDIT PROFILE MODAL BUTTON FIX
+========================= */
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px; /* space between buttons */
+  margin-top: 15px;
+}
+
+/* SAVE BUTTON (CHANGED TO BLUE) */
+.btn-save {
+  background: #3b82f6;
+  color: white;
+  padding: 8px 14px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.btn-save:hover {
+  background: #2563eb;
+}
+
+/* CANCEL BUTTON */
+.btn-cancel {
+  background: #e5e7eb;
+  color: #111;
+  padding: 8px 14px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.btn-cancel:hover {
+  background: #d1d5db;
+}
+
+/* =========================
+   PROFILE MENU BUTTONS
+========================= */
+
+.profile-menu button {
+  width: 100%;
+  padding: 8px;
+  margin-top: 8px;
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+/* EDIT PROFILE */
+#open-profile-edit {
+  background: #3b82f6;
+  color: white;
+}
+
+#open-profile-edit:hover {
+  background: #2563eb;
+}
+
+/* LOGOUT */
+#logout-btn {
+  background: #ef4444;
+  color: white;
+}
+
+#logout-btn:hover {
+  background: #dc2626;
+}
+
+/* =========================
+   NAV BUTTONS
+========================= */
+
+.nav-btn {
+  background: transparent;
+  color: #94a3b8;
+}
+
+.nav-btn.active {
+  background: #3b82f6;
+  color: white;
+}
+
+/* =========================
+   DARK MODE ICON
+========================= */
+
+.icon-btn {
+  background: transparent;
+  color: #111;
+}
+
+body.dark .icon-btn {
+  color: white;
+}

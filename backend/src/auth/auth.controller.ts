@@ -7,13 +7,18 @@ export class AuthController {
 
   @Post('register')
   register(@Body() body: any) {
-    const { username, password } = body;
-    return this.authService.register(username, password);
+    return this.authService.register(
+      body.username,
+      body.email,
+      body.password,
+    );
   }
 
   @Post('login')
   login(@Body() body: any) {
-    const { username, password } = body;
-    return this.authService.login(username, password);
+    return this.authService.login(
+      body.email,
+      body.password,
+    );
   }
 }

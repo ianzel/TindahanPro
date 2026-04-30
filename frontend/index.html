@@ -9,8 +9,10 @@
 
 <body>
 
+<!-- LOGIN -->
 <div id="login-screen"></div>
 
+<!-- APP -->
 <div id="main-app" style="display:none;">
 
   <!-- SIDEBAR -->
@@ -18,12 +20,12 @@
     <h2>TindahanPro</h2>
 
     <div class="nav">
-      <button id="nav-dashboard" class="nav-btn">Dashboard</button>
-      <button id="nav-products" class="nav-btn">Products</button>
-      <button id="nav-sales" class="nav-btn">Sales</button>
-      <button id="nav-reports" class="nav-btn">Reports</button>
-      <button id="nav-suppliers" class="nav-btn">Suppliers</button>
-      <button id="nav-credit" class="nav-btn">Credit</button>
+      <button class="nav-btn" id="nav-dashboard">Dashboard</button>
+      <button class="nav-btn" id="nav-products">Products</button>
+      <button class="nav-btn" id="nav-sales">Sales</button>
+      <button class="nav-btn" id="nav-reports">Reports</button>
+      <button class="nav-btn" id="nav-suppliers">Suppliers</button>
+      <button class="nav-btn" id="nav-credit">Credit</button>
     </div>
   </aside>
 
@@ -32,42 +34,55 @@
 
     <!-- HEADER -->
     <div class="header">
-
       <div class="header-right">
 
         <!-- DARK MODE -->
-        <button id="dark-toggle" class="profile-icon">🌙</button>
+        <button id="dark-toggle" class="icon-btn">🌙</button>
 
         <!-- PROFILE -->
         <div class="profile-wrapper">
+
           <img id="profile-avatar"
                src="https://ui-avatars.com/api/?name=User"
                class="profile-avatar"/>
 
+          <!-- PROFILE MENU -->
           <div id="profile-menu" class="profile-menu">
-            <p id="user-name">User</p>
-            <button id="edit-profile-btn">Edit Profile</button>
-            <button id="logout-btn">Logout</button>
-          </div>
-        </div>
 
+            <div class="profile-info">
+              <p id="user-name">User</p>
+              <small id="user-email">user@email.com</small>
+            </div>
+
+            <button id="open-profile-edit">Edit Profile</button>
+            <button id="logout-btn">Logout</button>
+
+          </div>
+
+        </div>
       </div>
     </div>
 
-    <!-- PROFILE MODAL -->
+    <!-- MODAL -->
     <div id="profile-modal" class="modal">
+
       <div class="modal-content">
 
         <h3>Edit Profile</h3>
 
-        <input id="edit-username" placeholder="Username"/>
+        <label>Username</label>
+        <input id="edit-username" type="text"/>
+
+        <label>New Password</label>
+        <input id="edit-password" type="password"/>
 
         <div class="modal-actions">
           <button id="save-profile" class="btn-save">Save</button>
-          <button class="btn-cancel">Cancel</button>
+          <button id="cancel-profile" class="btn-cancel">Cancel</button>
         </div>
 
       </div>
+
     </div>
 
     <main id="app" class="content"></main>
@@ -75,7 +90,6 @@
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script type="module" src="dist/app.js"></script>
 
 </body>
