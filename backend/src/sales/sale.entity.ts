@@ -3,30 +3,29 @@ import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from 'typeor
 @Entity('sales')
 export class Sale {
   @PrimaryGeneratedColumn()
-  id: number;
+  id!: number;
 
   @Column()
-  productId: number;
+  productId!: number;
 
   @Column()
-  quantity: number;
+  quantity!: number;
 
   @Column('decimal', { precision: 10, scale: 2 })
-  unitPrice: number;
+  unitPrice!: number;
 
   @Column('decimal', { precision: 10, scale: 2 })
-  unitCost: number;
+  unitCost!: number;
 
   @Column('decimal', { precision: 10, scale: 2 })
-  totalAmount: number;
+  totalAmount!: number;
 
   @Column('decimal', { precision: 10, scale: 2 })
-  profit: number;
+  profit!: number;
 
   @CreateDateColumn({ type: 'datetime' })
-  dateISO: Date;
+  dateISO!: Date;
 
-  /* ✅ FIX: make optional */
   @Column({ nullable: true })
-  productName: string;
+  productName?: string;
 }

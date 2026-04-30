@@ -3,9 +3,9 @@ import { IsInt, Min } from 'class-validator';
 export class CreateSaleDto {
   @IsInt()
   @Min(1)
-  productId: number;
+  productId!: number;
 
   @IsInt()
   @Min(1)
-  quantity: number;
+  quantity!: number;
 }

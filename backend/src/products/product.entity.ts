@@ -3,26 +3,26 @@ import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from 'typeor
 @Entity('products')
 export class Product {
   @PrimaryGeneratedColumn()
-  id: number;
+  id!: number;
 
   @Column()
-  name: string;
+  name!: string;
 
   @Column()
-  category: string;
+  category!: string;
 
   @Column('decimal', { precision: 10, scale: 2 })
-  buyingPrice: number;
+  buyingPrice!: number;
 
   @Column('decimal', { precision: 10, scale: 2 })
-  sellingPrice: number;
+  sellingPrice!: number;
 
   @Column()
-  stock: number;
+  stock!: number;
 
   @Column()
-  minStock: number;
+  minStock!: number;
 
   @CreateDateColumn()
-  created_at: Date;
+  created_at!: Date;
 }

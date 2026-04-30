@@ -1,27 +1,38 @@
 import { Injectable } from '@nestjs/common';
+import { UsersService } from '../users/users.service';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class AuthService {
-  private users: { username: string; password: string }[] = [];
+  constructor(private usersService: UsersService) {}
 
-  register(username: string, password: string) {
-    const existing = this.users.find(u => u.username === username);
+  async register(username: string, password: string) {
+    const existing = await this.usersService.findByUsername(username);
 
     if (existing) {
       return { message: 'User already exists' };
     }
 
-    this.users.push({ username, password });
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    await this.usersService.create({
+      username,
+      password: hashedPassword,
+    });
 
     return { message: 'Registered successfully' };
   }
 
-  login(username: string, password: string) {
-    const user = this.users.find(
-      u => u.username === username && u.password === password,
-    );
+  async login(username: string, password: string) {
+    const user = await this.usersService.findByUsername(username);
 
     if (!user) {
+      return { message: 'Invalid credentials' };
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+
+    if (!isMatch) {
       return { message: 'Invalid credentials' };
     }
 

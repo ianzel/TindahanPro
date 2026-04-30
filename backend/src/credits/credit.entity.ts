@@ -3,20 +3,20 @@ import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from 'typeor
 @Entity('credits')
 export class Credit {
   @PrimaryGeneratedColumn()
-  id: number;
+  id!: number;
 
   @Column()
-  customer: string;
+  customer!: string;
 
   @Column('decimal', { precision: 10, scale: 2 })
-  amount: number;
+  amount!: number;
 
   @Column()
-  dueDate: string;
+  dueDate!: string;
 
   @Column({ default: false })
-  isPaid: boolean;
+  isPaid!: boolean;
 
   @CreateDateColumn()
-  created_at: Date;
+  created_at!: Date;
 }

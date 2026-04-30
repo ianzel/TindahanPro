@@ -2,9 +2,9 @@ import { IsNotEmpty, MinLength } from 'class-validator';
 
 export class RegisterDto {
   @IsNotEmpty()
-  username: string;
+  username!: string;
 
   @IsNotEmpty()
   @MinLength(4)
-  password: string;
+  password!: string;
 }

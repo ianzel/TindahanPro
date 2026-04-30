@@ -1,17 +1,20 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
+// Entities
 import { Product } from './products/product.entity';
 import { Sale } from './sales/sale.entity';
-import { Supplier } from './suppliers/supplier.entity';
+import { Supplier } from './suppliers/supplier.entity'; // ✅ FIXED HERE
 import { Credit } from './credits/credit.entity';
+import { User } from './users/user.entity';
 
+// Feature Modules
 import { ProductsModule } from './products/products.module';
 import { SalesModule } from './sales/sales.module';
 import { SuppliersModule } from './suppliers/suppliers.module';
 import { CreditsModule } from './credits/credits.module';
-
-import { AuthModule } from './auth/auth.module'; // 🔥 ADD THIS
+import { AuthModule } from './auth/auth.module';
+import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
@@ -22,11 +25,18 @@ import { AuthModule } from './auth/auth.module'; // 🔥 ADD THIS
       username: 'root',
       password: '',
       database: 'tindahanpro_db',
-      entities: [Product, Sale, Supplier, Credit],
+      entities: [
+        Product,
+        Sale,
+        Supplier,
+        Credit,
+        User,
+      ],
       synchronize: true,
     }),
 
-    AuthModule, // 🔥 ADD THIS
+    AuthModule,
+    UsersModule,
 
     ProductsModule,
     SalesModule,

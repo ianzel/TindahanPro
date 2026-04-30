@@ -1,0 +1,19 @@
+{
+  "name": "tindahanpro-frontend",
+  "version": "1.0.0",
+  "description": "TindahanPro Frontend (Vanilla TS)",
+  "type": "module",
+
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc -w",
+    "start": "npx serve ."
+  },
+
+  "dependencies": {},
+
+  "devDependencies": {
+    "typescript": "^5.5.4",
+    "serve": "^14.2.1"
+  }
+}
