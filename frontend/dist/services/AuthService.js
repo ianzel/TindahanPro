@@ -1,32 +1,42 @@
-import { post } from "../api.js";
-const USER_KEY = "tp_user";
-const LOGIN_KEY = "tp_logged_in";
-export class AuthService {
+const API_URL = "http://localhost:3000";
+export default class AuthService {
     static async login(email, password) {
-        const data = await post("/auth/login", { email, password });
-        // IMPORTANT: store full user properly
-        localStorage.setItem(USER_KEY, JSON.stringify(data.user));
-        localStorage.setItem(LOGIN_KEY, "true");
-        return data;
-    }
-    static async register(username, email, password) {
-        const res = await fetch("http://localhost:3000/auth/register", {
+        const res = await fetch(`${API_URL}/auth/login`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ username, email, password }),
+            body: JSON.stringify({ email, password }),
         });
-        return res.json();
+        const result = await res.json();
+        if (!result.success) {
+            throw new Error(result.message || "Login failed");
+        }
+        localStorage.setItem("token", result.token);
+        localStorage.setItem("user", JSON.stringify(result.user));
+        return result;
+    }
+    static async register(data) {
+        const res = await fetch(`${API_URL}/auth/register`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data),
+        });
+        const result = await res.json();
+        if (!result.success) {
+            throw new Error(result.message || "Registration failed");
+        }
+        localStorage.setItem("token", result.token);
+        localStorage.setItem("user", JSON.stringify(result.user));
+        return result;
     }
     static logout() {
-        localStorage.removeItem(USER_KEY);
-        localStorage.removeItem(LOGIN_KEY);
-    }
-    static isLoggedIn() {
-        return localStorage.getItem(LOGIN_KEY) === "true"
-            && localStorage.getItem(USER_KEY) !== null;
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
     }
     static getUser() {
-        const raw = localStorage.getItem(USER_KEY);
-        return raw ? JSON.parse(raw) : null;
+        const data = localStorage.getItem("user");
+        return data ? JSON.parse(data) : null;
+    }
+    static isLoggedIn() {
+        return !!localStorage.getItem("token");
     }
 }

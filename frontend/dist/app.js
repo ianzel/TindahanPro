@@ -6,23 +6,13 @@ import { renderSuppliers } from "./ui/SuppliersView.js";
 import { renderCredits } from "./ui/CreditView.js";
 import { renderLogin } from "./ui/LoginView.js";
 import { renderRegister } from "./ui/RegisterView.js";
-import { AuthService } from "./services/AuthService.js";
+import AuthService from "./services/AuthService.js";
 const root = document.getElementById("app");
 const loginScreen = document.getElementById("login-screen");
 const mainApp = document.getElementById("main-app");
-/* =========================
-   USER (FIXED SOURCE OF TRUTH)
-========================= */
-let currentUser = AuthService.getUser();
-/* =========================
-   SAFE GET
-========================= */
-function get(id) {
-    return document.getElementById(id);
-}
-/* =========================
-   LOAD PROFILE UI
-========================= */
+let currentUser = null;
+const get = (id) => document.getElementById(id);
+/* PROFILE UI */
 function loadProfileUI() {
     if (!currentUser)
         return;
@@ -32,144 +22,139 @@ function loadProfileUI() {
     if (nameEl)
         nameEl.textContent = currentUser.username;
     if (emailEl)
-        emailEl.textContent = currentUser.email;
+        emailEl.textContent = currentUser.email ?? "";
     if (avatar) {
-        avatar.src = `https://ui-avatars.com/api/?name=${currentUser.username}`;
+        avatar.textContent = currentUser.username
+            .split(" ")
+            .map(n => n[0])
+            .join("")
+            .toUpperCase();
     }
 }
-/* =========================
-   NAV ACTIVE
-========================= */
+/* NAV ACTIVE */
 function setActive(id) {
-    document.querySelectorAll(".nav-btn").forEach(btn => btn.classList.remove("active"));
-    document.getElementById(id)?.classList.add("active");
+    document.querySelectorAll(".nav-btn").forEach(b => b.classList.remove("active"));
+    get(id)?.classList.add("active");
 }
-/* =========================
-   VIEW SWITCH
-========================= */
+/* VIEW */
 async function show(view) {
     root.innerHTML = "Loading...";
-    if (view === "dashboard")
-        await renderDashboard(root);
-    if (view === "products")
-        await renderProducts(root);
-    if (view === "sales")
-        await renderSales(root);
-    if (view === "reports")
-        await renderReports(root);
-    if (view === "suppliers")
-        renderSuppliers(root);
-    if (view === "credit")
-        renderCredits(root);
+    switch (view) {
+        case "dashboard":
+            await renderDashboard(root);
+            break;
+        case "products":
+            await renderProducts(root);
+            break;
+        case "sales":
+            await renderSales(root);
+            break;
+        case "reports":
+            await renderReports(root);
+            break;
+        case "suppliers":
+            renderSuppliers(root);
+            break;
+        case "credit":
+            renderCredits(root);
+            break;
+    }
 }
-/* =========================
-   PROFILE + DARK MODE
-========================= */
+/* UI INIT (FIXED CLICK ISSUE) */
 function initUI() {
     const avatar = get("profile-avatar");
     const menu = get("profile-menu");
     const modal = get("profile-modal");
-    const darkBtn = get("dark-toggle");
-    const editBtn = get("open-profile-edit");
-    const saveBtn = get("save-profile");
-    const cancelBtn = get("cancel-profile");
-    const logoutBtn = get("logout-btn");
-    loadProfileUI();
-    /* PROFILE MENU FIX */
-    avatar?.addEventListener("click", (e) => {
+    if (!avatar || !menu)
+        return;
+    /* OPEN MENU */
+    avatar.onclick = (e) => {
         e.stopPropagation();
-        menu?.classList.toggle("show");
-    });
+        menu.classList.toggle("show");
+    };
+    /* CLOSE OUTSIDE */
     document.addEventListener("click", () => {
-        menu?.classList.remove("show");
+        menu.classList.remove("show");
     });
-    /* OPEN MODAL */
-    editBtn?.addEventListener("click", () => {
-        menu?.classList.remove("show");
-        modal?.classList.add("show");
-        (get("edit-username").value =
-            currentUser?.username || "");
-        (get("edit-email").value =
-            currentUser?.email || "");
-        (get("edit-password").value = "");
+    /* STOP MENU CLOSE */
+    menu.onclick = (e) => {
+        e.stopPropagation();
+    };
+    /* 🔥 FIXED: EDIT PROFILE ALWAYS WORKS */
+    const editBtn = get("open-profile-edit");
+    if (editBtn) {
+        editBtn.onclick = (e) => {
+            e.stopPropagation();
+            menu.classList.remove("show");
+            if (modal)
+                modal.classList.remove("hidden");
+            const input = get("edit-username");
+            if (input && currentUser) {
+                input.value = currentUser.username;
+            }
+        };
+    }
+    /* CANCEL */
+    get("cancel-profile")?.addEventListener("click", () => {
+        modal?.classList.add("hidden");
     });
-    /* CLOSE */
-    cancelBtn?.addEventListener("click", () => {
-        modal?.classList.remove("show");
-    });
-    /* SAVE PROFILE */
-    saveBtn?.addEventListener("click", async () => {
-        const username = get("edit-username").value;
-        const email = get("edit-email").value;
-        const password = get("edit-password").value;
-        const res = await fetch(`http://localhost:3000/users/${currentUser.id}`, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ username, email, password })
-        });
-        if (res.ok) {
-            currentUser.username = username;
-            currentUser.email = email;
-            localStorage.setItem("tp_user", JSON.stringify(currentUser));
-            loadProfileUI();
-            modal?.classList.remove("show");
-            alert("Profile updated!");
-        }
-        else {
-            alert("Update failed");
-        }
+    /* SAVE */
+    get("save-profile")?.addEventListener("click", () => {
+        const input = get("edit-username");
+        if (!input || !currentUser)
+            return;
+        currentUser.username = input.value;
+        localStorage.setItem("tp_user", JSON.stringify(currentUser));
+        loadProfileUI();
+        modal?.classList.add("hidden");
     });
     /* LOGOUT */
-    logoutBtn?.addEventListener("click", () => {
+    get("logout-btn")?.addEventListener("click", () => {
         AuthService.logout();
-        location.reload();
+        startLogin();
     });
-    /* DARK MODE FIX */
-    if (localStorage.getItem("dark") === "true") {
-        document.body.classList.add("dark");
-    }
-    darkBtn?.addEventListener("click", (e) => {
-        e.stopPropagation();
+    /* DARK MODE */
+    get("dark-toggle")?.addEventListener("click", () => {
         document.body.classList.toggle("dark");
         localStorage.setItem("dark", String(document.body.classList.contains("dark")));
     });
 }
-/* =========================
-   START APP (FIXED LOGIN ISSUE)
-========================= */
+/* START APP */
 function startApp() {
-    loginScreen.innerHTML = "";
+    currentUser = AuthService.getUser();
+    if (!currentUser)
+        return startLogin();
+    loginScreen.style.display = "none";
     mainApp.style.display = "flex";
-    currentUser = AuthService.getUser(); // refresh user
-    if (!currentUser) {
-        showLogin();
-        return;
-    }
     initUI();
+    loadProfileUI();
     setActive("nav-dashboard");
     show("dashboard");
 }
-/* =========================
-   LOGIN / REGISTER
-========================= */
-function showLogin() {
+/* LOGIN */
+function startLogin() {
     mainApp.style.display = "none";
-    renderLogin(startApp, showRegister);
+    loginScreen.style.display = "block";
+    renderLogin(startApp, () => {
+        mainApp.style.display = "none";
+        renderRegister(startLogin);
+    });
 }
-function showRegister() {
-    mainApp.style.display = "none";
-    renderRegister(showLogin);
-}
-/* =========================
-   NAVIGATION
-========================= */
-["dashboard", "products", "sales", "reports", "suppliers", "credit"].forEach((v) => {
-    document.getElementById(`nav-${v}`)?.addEventListener("click", () => {
+/* NAV */
+["dashboard", "products", "sales", "reports", "suppliers", "credit"]
+    .forEach(v => {
+    get(`nav-${v}`)?.addEventListener("click", () => {
         setActive(`nav-${v}`);
         show(v);
     });
 });
-/* =========================
-   AUTO LOGIN FIXED
-========================= */
-AuthService.isLoggedIn() ? startApp() : showLogin();
+/* BOOT */
+window.addEventListener("DOMContentLoaded", () => {
+    try {
+        AuthService.getUser() ? startApp() : startLogin();
+    }
+    catch (err) {
+        console.error(err);
+        startLogin();
+    }
+});

@@ -1,4 +1,4 @@
-import { AuthService } from "../services/AuthService.js";
+import AuthService from "../services/AuthService.js";
 
 export function renderLogin(onSuccess: () => void, goRegister: () => void) {
   const root = document.getElementById("login-screen") as HTMLElement;
@@ -8,14 +8,10 @@ export function renderLogin(onSuccess: () => void, goRegister: () => void) {
       <div class="auth-card">
 
         <h2>TindahanPro</h2>
-        <p class="subtitle">
-          Smart Sari-Sari Store Management System.<br/>
-          Track products, sales, and profits easily.
-        </p>
 
         <div class="input-group">
           <label>Email</label>
-          <input id="login-email" type="email" placeholder="Enter your email" />
+          <input id="login-email" type="email" placeholder="Enter email" />
         </div>
 
         <div class="input-group">
@@ -23,7 +19,7 @@ export function renderLogin(onSuccess: () => void, goRegister: () => void) {
           <input id="login-password" type="password" placeholder="Enter password" />
         </div>
 
-        <button class="auth-btn" id="login-btn">Login</button>
+        <button id="login-btn" class="auth-btn">Login</button>
 
         <p class="switch-text">
           Don't have an account?
@@ -36,17 +32,26 @@ export function renderLogin(onSuccess: () => void, goRegister: () => void) {
     </div>
   `;
 
+  const email = document.getElementById("login-email") as HTMLInputElement;
+  const password = document.getElementById("login-password") as HTMLInputElement;
+  const error = document.getElementById("login-error") as HTMLElement;
+
   document.getElementById("go-register")!.onclick = goRegister;
 
   document.getElementById("login-btn")!.onclick = async () => {
-    const email = (document.getElementById("login-email") as HTMLInputElement).value;
-    const password = (document.getElementById("login-password") as HTMLInputElement).value;
+    error.textContent = "";
+
+    if (!email.value || !password.value) {
+      error.textContent = "Please fill in all fields";
+      return;
+    }
 
     try {
-      await AuthService.login(email, password);
+      await AuthService.login(email.value, password.value);
       onSuccess();
-    } catch (err) {
-      document.getElementById("login-error")!.textContent = "Invalid credentials";
+    } catch (err: any) {
+      console.error(err);
+      error.textContent = err.message || "Login failed";
     }
   };
 }

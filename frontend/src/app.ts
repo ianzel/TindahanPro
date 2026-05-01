@@ -6,9 +6,15 @@ import { renderSuppliers } from "./ui/SuppliersView.js";
 import { renderCredits } from "./ui/CreditView.js";
 import { renderLogin } from "./ui/LoginView.js";
 import { renderRegister } from "./ui/RegisterView.js";
-import { AuthService } from "./services/AuthService.js";
 
-/* ========================= */
+import AuthService from "./services/AuthService.js";
+
+type User = {
+  id?: number;
+  username: string;
+  email?: string;
+};
+
 type View =
   | "dashboard"
   | "products"
@@ -17,209 +23,183 @@ type View =
   | "suppliers"
   | "credit";
 
-const root = document.getElementById("app")!;
-const loginScreen = document.getElementById("login-screen")!;
-const mainApp = document.getElementById("main-app")!;
+const root = document.getElementById("app") as HTMLElement;
+const loginScreen = document.getElementById("login-screen") as HTMLElement;
+const mainApp = document.getElementById("main-app") as HTMLElement;
 
-/* =========================
-   USER (FIXED SOURCE OF TRUTH)
-========================= */
-let currentUser = AuthService.getUser();
+let currentUser: User | null = null;
 
-/* =========================
-   SAFE GET
-========================= */
-function get<T extends HTMLElement>(id: string): T | null {
-  return document.getElementById(id) as T | null;
-}
+const get = (id: string) => document.getElementById(id);
 
-/* =========================
-   LOAD PROFILE UI
-========================= */
+/* PROFILE UI */
 function loadProfileUI() {
   if (!currentUser) return;
 
   const nameEl = get("user-name");
   const emailEl = get("user-email");
-  const avatar = get<HTMLImageElement>("profile-avatar");
+  const avatar = get("profile-avatar");
 
   if (nameEl) nameEl.textContent = currentUser.username;
-  if (emailEl) emailEl.textContent = currentUser.email;
+  if (emailEl) emailEl.textContent = currentUser.email ?? "";
 
   if (avatar) {
-    avatar.src = `https://ui-avatars.com/api/?name=${currentUser.username}`;
+    avatar.textContent = currentUser.username
+      .split(" ")
+      .map(n => n[0])
+      .join("")
+      .toUpperCase();
   }
 }
 
-/* =========================
-   NAV ACTIVE
-========================= */
+/* NAV ACTIVE */
 function setActive(id: string) {
-  document.querySelectorAll(".nav-btn").forEach(btn =>
-    btn.classList.remove("active")
+  document.querySelectorAll(".nav-btn").forEach(b =>
+    b.classList.remove("active")
   );
-  document.getElementById(id)?.classList.add("active");
+  get(id)?.classList.add("active");
 }
 
-/* =========================
-   VIEW SWITCH
-========================= */
+/* VIEW */
 async function show(view: View) {
   root.innerHTML = "Loading...";
 
-  if (view === "dashboard") await renderDashboard(root);
-  if (view === "products") await renderProducts(root);
-  if (view === "sales") await renderSales(root);
-  if (view === "reports") await renderReports(root);
-  if (view === "suppliers") renderSuppliers(root);
-  if (view === "credit") renderCredits(root);
+  switch (view) {
+    case "dashboard":
+      await renderDashboard(root);
+      break;
+    case "products":
+      await renderProducts(root);
+      break;
+    case "sales":
+      await renderSales(root);
+      break;
+    case "reports":
+      await renderReports(root);
+      break;
+    case "suppliers":
+      renderSuppliers(root);
+      break;
+    case "credit":
+      renderCredits(root);
+      break;
+  }
 }
 
-/* =========================
-   PROFILE + DARK MODE
-========================= */
+/* UI INIT (FIXED CLICK ISSUE) */
 function initUI() {
-
   const avatar = get("profile-avatar");
   const menu = get("profile-menu");
   const modal = get("profile-modal");
 
-  const darkBtn = get("dark-toggle");
-  const editBtn = get("open-profile-edit");
-  const saveBtn = get("save-profile");
-  const cancelBtn = get("cancel-profile");
-  const logoutBtn = get("logout-btn");
+  if (!avatar || !menu) return;
 
-  loadProfileUI();
-
-  /* PROFILE MENU FIX */
-  avatar?.addEventListener("click", (e) => {
+  /* OPEN MENU */
+  avatar.onclick = (e) => {
     e.stopPropagation();
-    menu?.classList.toggle("show");
-  });
+    menu.classList.toggle("show");
+  };
 
+  /* CLOSE OUTSIDE */
   document.addEventListener("click", () => {
-    menu?.classList.remove("show");
+    menu.classList.remove("show");
   });
 
-  /* OPEN MODAL */
-  editBtn?.addEventListener("click", () => {
-    menu?.classList.remove("show");
-    modal?.classList.add("show");
+  /* STOP MENU CLOSE */
+  menu.onclick = (e) => {
+    e.stopPropagation();
+  };
 
-    (get<HTMLInputElement>("edit-username")!.value =
-      currentUser?.username || "");
+  /* 🔥 FIXED: EDIT PROFILE ALWAYS WORKS */
+  const editBtn = get("open-profile-edit");
+  if (editBtn) {
+    editBtn.onclick = (e) => {
+      e.stopPropagation();
 
-    (get<HTMLInputElement>("edit-email")!.value =
-      currentUser?.email || "");
+      menu.classList.remove("show");
 
-    (get<HTMLInputElement>("edit-password")!.value = "");
-  });
+      if (modal) modal.classList.remove("hidden");
 
-  /* CLOSE */
-  cancelBtn?.addEventListener("click", () => {
-    modal?.classList.remove("show");
-  });
-
-  /* SAVE PROFILE */
-  saveBtn?.addEventListener("click", async () => {
-    const username = get<HTMLInputElement>("edit-username")!.value;
-    const email = get<HTMLInputElement>("edit-email")!.value;
-    const password = get<HTMLInputElement>("edit-password")!.value;
-
-    const res = await fetch(
-      `http://localhost:3000/users/${currentUser.id}`,
-      {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, email, password })
+      const input = get("edit-username") as HTMLInputElement;
+      if (input && currentUser) {
+        input.value = currentUser.username;
       }
-    );
+    };
+  }
 
-    if (res.ok) {
-      currentUser.username = username;
-      currentUser.email = email;
+  /* CANCEL */
+  get("cancel-profile")?.addEventListener("click", () => {
+    modal?.classList.add("hidden");
+  });
 
-      localStorage.setItem("tp_user", JSON.stringify(currentUser));
+  /* SAVE */
+  get("save-profile")?.addEventListener("click", () => {
+    const input = get("edit-username") as HTMLInputElement;
 
-      loadProfileUI();
-      modal?.classList.remove("show");
+    if (!input || !currentUser) return;
 
-      alert("Profile updated!");
-    } else {
-      alert("Update failed");
-    }
+    currentUser.username = input.value;
+
+    localStorage.setItem("tp_user", JSON.stringify(currentUser));
+
+    loadProfileUI();
+    modal?.classList.add("hidden");
   });
 
   /* LOGOUT */
-  logoutBtn?.addEventListener("click", () => {
+  get("logout-btn")?.addEventListener("click", () => {
     AuthService.logout();
-    location.reload();
+    startLogin();
   });
 
-  /* DARK MODE FIX */
-  if (localStorage.getItem("dark") === "true") {
-    document.body.classList.add("dark");
-  }
-
-  darkBtn?.addEventListener("click", (e) => {
-    e.stopPropagation();
-
+  /* DARK MODE */
+  get("dark-toggle")?.addEventListener("click", () => {
     document.body.classList.toggle("dark");
-
-    localStorage.setItem(
-      "dark",
-      String(document.body.classList.contains("dark"))
-    );
+    localStorage.setItem("dark", String(document.body.classList.contains("dark")));
   });
 }
 
-/* =========================
-   START APP (FIXED LOGIN ISSUE)
-========================= */
+/* START APP */
 function startApp() {
-  loginScreen.innerHTML = "";
+  currentUser = AuthService.getUser();
+
+  if (!currentUser) return startLogin();
+
+  loginScreen.style.display = "none";
   mainApp.style.display = "flex";
 
-  currentUser = AuthService.getUser(); // refresh user
-
-  if (!currentUser) {
-    showLogin();
-    return;
-  }
-
   initUI();
+  loadProfileUI();
 
   setActive("nav-dashboard");
   show("dashboard");
 }
 
-/* =========================
-   LOGIN / REGISTER
-========================= */
-function showLogin() {
+/* LOGIN */
+function startLogin() {
   mainApp.style.display = "none";
-  renderLogin(startApp, showRegister);
+  loginScreen.style.display = "block";
+
+  renderLogin(startApp, () => {
+    mainApp.style.display = "none";
+    renderRegister(startLogin);
+  });
 }
 
-function showRegister() {
-  mainApp.style.display = "none";
-  renderRegister(showLogin);
-}
-
-/* =========================
-   NAVIGATION
-========================= */
-["dashboard", "products", "sales", "reports", "suppliers", "credit"].forEach(
-  (v) => {
-    document.getElementById(`nav-${v}`)?.addEventListener("click", () => {
+/* NAV */
+["dashboard", "products", "sales", "reports", "suppliers", "credit"]
+  .forEach(v => {
+    get(`nav-${v}`)?.addEventListener("click", () => {
       setActive(`nav-${v}`);
       show(v as View);
     });
-  }
-);
+  });
 
-/* =========================
-   AUTO LOGIN FIXED
-========================= */
-AuthService.isLoggedIn() ? startApp() : showLogin();
+/* BOOT */
+window.addEventListener("DOMContentLoaded", () => {
+  try {
+    AuthService.getUser() ? startApp() : startLogin();
+  } catch (err) {
+    console.error(err);
+    startLogin();
+  }
+});

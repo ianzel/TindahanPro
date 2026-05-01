@@ -1,4 +1,4 @@
-import { AuthService } from "../services/AuthService.js";
+import AuthService from "../services/AuthService.js";
 
 export function renderRegister(goLogin: () => void) {
   const root = document.getElementById("login-screen") as HTMLElement;
@@ -53,17 +53,25 @@ export function renderRegister(goLogin: () => void) {
     const pass = (document.getElementById("reg-pass") as HTMLInputElement).value;
     const pass2 = (document.getElementById("reg-pass2") as HTMLInputElement).value;
 
+    const errorEl = document.getElementById("reg-error") as HTMLElement;
+
     if (pass !== pass2) {
-      document.getElementById("reg-error")!.textContent = "Passwords do not match";
+      errorEl.textContent = "Passwords do not match";
       return;
     }
 
     try {
-      await AuthService.register(name, email, pass);
+      await AuthService.register({
+        username: name,
+        email: email,
+        password: pass,
+      });
+
       alert("Registered successfully!");
       goLogin();
-    } catch {
-      document.getElementById("reg-error")!.textContent = "Registration failed";
+    } catch (err) {
+      errorEl.textContent = "Registration failed";
+      console.error(err);
     }
   };
 }

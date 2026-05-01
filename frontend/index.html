@@ -6,95 +6,75 @@
   <title>TindahanPro</title>
 
   <link rel="stylesheet" href="styles.css"/>
-
-  <!-- IMPORTANT: Chart.js must load BEFORE app -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body>
 
-<!-- LOGIN -->
-<div id="login-screen"></div>
+  <div id="login-screen"></div>
 
-<!-- APP -->
-<div id="main-app" style="display:none;">
+  <div id="main-app">
 
-  <!-- SIDEBAR -->
-  <aside class="sidebar">
-    <h2>TindahanPro</h2>
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="logo">TindahanPro</div>
 
-    <div class="nav">
-      <button class="nav-btn" id="nav-dashboard">Dashboard</button>
-      <button class="nav-btn" id="nav-products">Products</button>
-      <button class="nav-btn" id="nav-sales">Sales</button>
-      <button class="nav-btn" id="nav-reports">Reports</button>
-      <button class="nav-btn" id="nav-suppliers">Suppliers</button>
-      <button class="nav-btn" id="nav-credit">Credit</button>
-    </div>
-  </aside>
+      <div class="nav">
+        <button id="nav-dashboard" class="nav-btn">Dashboard</button>
+        <button id="nav-products" class="nav-btn">Products</button>
+        <button id="nav-sales" class="nav-btn">Sales</button>
+        <button id="nav-reports" class="nav-btn">Reports</button>
+        <button id="nav-suppliers" class="nav-btn">Suppliers</button>
+        <button id="nav-credit" class="nav-btn">Credit</button>
+      </div>
+    </aside>
 
-  <!-- MAIN -->
-  <div class="main">
+    <!-- MAIN -->
+    <div class="main">
 
-    <!-- HEADER -->
-    <div class="header">
-      <div class="header-right">
+      <!-- HEADER -->
+      <header class="header">
+        <div class="header-right">
 
-        <button id="dark-toggle" class="icon-btn">🌙</button>
+          <button id="dark-toggle" class="icon-btn">🌙</button>
 
-        <!-- PROFILE -->
-        <div class="profile-wrapper">
-
-          <img id="profile-avatar"
-               src="https://ui-avatars.com/api/?name=User"
-               class="profile-avatar"/>
+          <!-- AVATAR -->
+          <div id="profile-avatar" class="avatar"></div>
 
           <!-- PROFILE MENU -->
           <div id="profile-menu" class="profile-menu hidden">
-
             <div class="profile-info">
-              <p id="user-name">User</p>
-              <small id="user-email">user@email.com</small>
+              <strong id="user-name"></strong>
+              <small id="user-email"></small>
             </div>
 
-            <button id="open-profile-edit" class="profile-btn edit">Edit Profile</button>
-            <button id="logout-btn" class="profile-btn logout">Logout</button>
-
+            <button id="open-profile-edit">Edit Profile</button>
+            <button id="logout-btn">Logout</button>
           </div>
+
         </div>
-      </div>
-    </div>
+      </header>
 
-    <!-- MODAL -->
-    <div id="profile-modal" class="modal hidden">
-
-      <div class="modal-content">
-
-        <h3>Edit Profile</h3>
-
-        <label>Username</label>
-        <input id="edit-username" type="text"/>
-
-        <label>New Password</label>
-        <input id="edit-password" type="password"/>
-
-        <div class="modal-actions">
-          <button id="save-profile" class="btn-save">Save</button>
-          <button id="cancel-profile" class="btn-cancel">Cancel</button>
-        </div>
-
-      </div>
+      <!-- CONTENT -->
+      <main id="app"></main>
 
     </div>
-
-    <!-- CONTENT -->
-    <main id="app" class="content"></main>
-
   </div>
-</div>
 
-<!-- APP SCRIPT -->
-<script type="module" src="dist/app.js"></script>
+  <!-- MODAL -->
+  <div id="profile-modal" class="modal hidden">
+    <div class="modal-box">
+      <h3>Edit Profile</h3>
 
+      <input id="edit-username" placeholder="Enter new username" />
+
+      <div class="modal-actions">
+        <button id="cancel-profile" class="btn-cancel">Cancel</button>
+        <button id="save-profile" class="btn-primary">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="./dist/app.js"></script>
 </body>
 </html>

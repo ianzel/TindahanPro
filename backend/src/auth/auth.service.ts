@@ -1,56 +1,56 @@
 import { Injectable } from '@nestjs/common';
-import { UsersService } from '../users/users.service';
+import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class AuthService {
-  constructor(private usersService: UsersService) {}
+  constructor(private jwtService: JwtService) {}
 
-  async register(username: string, email: string, password: string) {
-    const existing = await this.usersService.findByEmail(email);
+  private users: any[] = [
+    {
+      id: 1,
+      username: 'admin',
+      email: 'admin@test.com',
+      password: bcrypt.hashSync('123456', 10),
+    },
+  ];
 
-    if (existing) {
-      return { message: 'User already exists' };
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    const user = await this.usersService.create({
-      username,
-      email,
-      password: hashedPassword,
-    });
-
-    return {
-      message: 'Registered successfully',
-      user: {
-        id: user.id,
-        username: user.username,
-        email: user.email,
-      },
-    };
-  }
-
-  async login(email: string, password: string) {
-    const user = await this.usersService.findByEmail(email);
-
-    if (!user) {
-      return { message: 'Invalid credentials' };
-    }
+  // LOGIN
+  async validateUser(email: string, password: string) {
+    const user = this.users.find((u) => u.email === email);
+    if (!user) return null;
 
     const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) return null;
 
-    if (!isMatch) {
-      return { message: 'Invalid credentials' };
+    return user;
+  }
+
+  // REGISTER
+  register(userData: any) {
+    const exists = this.users.find((u) => u.email === userData.email);
+
+    if (exists) {
+      throw new Error('User already exists');
     }
 
-    return {
-      message: 'Login successful',
-      user: {
-        id: user.id,
-        username: user.username,
-        email: user.email,
-      },
+    const newUser = {
+      id: this.users.length + 1,
+      username: userData.username,
+      email: userData.email,
+      password: bcrypt.hashSync(userData.password, 10),
     };
+
+    this.users.push(newUser);
+
+    return newUser;
+  }
+
+  // TOKEN
+  generateToken(user: any) {
+    return this.jwtService.sign({
+      id: user.id,
+      email: user.email,
+    });
   }
 }

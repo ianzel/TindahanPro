@@ -5,20 +5,55 @@ import { AuthService } from './auth.service';
 export class AuthController {
   constructor(private authService: AuthService) {}
 
-  @Post('register')
-  register(@Body() body: any) {
-    return this.authService.register(
-      body.username,
+  // LOGIN
+  @Post('login')
+  async login(@Body() body: any) {
+    const user = await this.authService.validateUser(
       body.email,
       body.password,
     );
+
+    if (!user) {
+      return {
+        success: false,
+        message: 'Invalid credentials',
+      };
+    }
+
+    const token = this.authService.generateToken(user);
+
+    return {
+      success: true,
+      user: {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+      },
+      token,
+    };
   }
 
-  @Post('login')
-  login(@Body() body: any) {
-    return this.authService.login(
-      body.email,
-      body.password,
-    );
+  // REGISTER
+  @Post('register')
+  register(@Body() body: any) {
+    try {
+      const user = this.authService.register(body);
+      const token = this.authService.generateToken(user);
+
+      return {
+        success: true,
+        user: {
+          id: user.id,
+          username: user.username,
+          email: user.email,
+        },
+        token,
+      };
+    } catch (err: any) {
+      return {
+        success: false,
+        message: err.message || 'Registration failed',
+      };
+    }
   }
 }

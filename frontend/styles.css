@@ -1021,104 +1021,149 @@ button:hover {
   background-color: #45a049;
 }
 
-/* =========================
-   PROFILE MENU FIX (ONLY ONE SYSTEM)
-========================= */
-.profile-menu {
-  display: none;
-  position: absolute;
-  top: 50px;
-  right: 0;
-  width: 180px;
-  background: white;
-  border-radius: 10px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-  padding: 10px;
-  z-index: 999;
+/* RESET */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
 }
 
-/* ONLY THIS CONTROLS VISIBILITY */
-.profile-menu.show {
-  display: block;
+body {
+  height: 100vh;
+  overflow: hidden;
+  background: #f3f4f6;
 }
 
-/* PROFILE INFO */
-.profile-info {
-  margin-bottom: 8px;
-}
-
-/* =========================
-   GLOBAL BUTTON RESET (IMPORTANT)
-========================= */
-
-button {
-  font-family: inherit;
-  border: none;
-  cursor: pointer;
-  transition: 0.2s ease;
-}
-
-/* =========================
-   EDIT PROFILE MODAL BUTTON FIX
-========================= */
-
-.modal-actions {
+/* APP */
+#main-app {
   display: flex;
-  justify-content: flex-end;
-  gap: 12px; /* space between buttons */
-  margin-top: 15px;
+  height: 100vh;
 }
 
-/* SAVE BUTTON (CHANGED TO BLUE) */
-.btn-save {
-  background: #3b82f6;
+/* SIDEBAR (RESTORED GOOD LOOK) */
+.sidebar {
+  width: 240px;
+  background: #111827;
   color: white;
-  padding: 8px 14px;
-  border-radius: 6px;
-  border: none;
-  cursor: pointer;
-  font-size: 13px;
+  display: flex;
+  flex-direction: column;
+  padding: 20px 10px;
+  height: 100vh;
 }
 
-.btn-save:hover {
+.logo {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+/* NAV */
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.nav-btn {
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  background: #1f2937;
+  color: white;
+  text-align: left;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.nav-btn:hover {
+  background: #374151;
+}
+
+.nav-btn.active {
   background: #2563eb;
 }
 
-/* CANCEL BUTTON */
-.btn-cancel {
-  background: #e5e7eb;
-  color: #111;
-  padding: 8px 14px;
-  border-radius: 6px;
-  border: none;
-  cursor: pointer;
-  font-size: 13px;
+/* MAIN */
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
-.btn-cancel:hover {
-  background: #d1d5db;
+/* HEADER */
+.header {
+  height: 55px;
+  background: white;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 0 20px;
+  border-bottom: 1px solid #ddd;
 }
 
-/* =========================
-   PROFILE MENU BUTTONS
-========================= */
-
-.profile-menu button {
-  width: 100%;
-  padding: 8px;
-  margin-top: 8px;
-  border-radius: 6px;
-  font-size: 13px;
-}
-
-/* EDIT PROFILE */
-#open-profile-edit {
+/* AVATAR */
+.avatar {
+  width: 38px;
+  height: 38px;
   background: #3b82f6;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+/* PROFILE MENU (FIXED CLICK + LOOKS GOOD) */
+#profile-menu {
+  position: absolute;
+  top: 60px;
+  right: 20px;
+  background: white;
+  border-radius: 12px;
+  padding: 10px;
+  display: none;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 200px;
+  z-index: 9999;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+}
+
+#profile-menu.show {
+  display: flex;
+}
+
+.profile-info {
+  padding: 8px;
+  border-bottom: 1px solid #eee;
+}
+
+/* BUTTONS (MODERN LOOK) */
+#profile-menu button {
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.2s;
+  font-weight: 500;
+}
+
+#profile-menu button:hover {
+  transform: scale(1.03);
+}
+
+/* EDIT BUTTON */
+#open-profile-edit {
+  background: #2563eb;
   color: white;
 }
 
 #open-profile-edit:hover {
-  background: #2563eb;
+  background: #1d4ed8;
 }
 
 /* LOGOUT */
@@ -1131,29 +1176,14 @@ button {
   background: #dc2626;
 }
 
-/* =========================
-   NAV BUTTONS
-========================= */
-
-.nav-btn {
-  background: transparent;
-  color: #94a3b8;
+/* CONTENT */
+#app {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
 }
 
-.nav-btn.active {
-  background: #3b82f6;
-  color: white;
-}
-
-/* =========================
-   DARK MODE ICON
-========================= */
-
-.icon-btn {
-  background: transparent;
-  color: #111;
-}
-
-body.dark .icon-btn {
-  color: white;
+/* MODAL */
+.hidden {
+  display: none;
 }
