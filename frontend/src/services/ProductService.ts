@@ -1,30 +1,28 @@
-const API = "http://127.0.0.1:3000/products";
+const KEY = "products";
 
 export class ProductService {
   static async list() {
-    try {
-      const res = await fetch(API);
-
-      if (!res.ok) throw new Error("Server error");
-
-      return await res.json();
-    } catch (err) {
-      console.error("PRODUCT LOAD ERROR:", err);
-      return []; // prevents blank screen
-    }
+    return JSON.parse(localStorage.getItem(KEY) || "[]");
   }
 
   static async create(data: any) {
-    const res = await fetch(API, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    });
+    const products = await this.list();
 
-    if (!res.ok) throw new Error("Create failed");
+    const newProduct = {
+      name: data.name,
+      stock: Number(data.stock),
+      sell: Number(data.sell),
+      buy: Number(data.buy),
+    };
 
-    return res.json();
+    products.push(newProduct);
+
+    localStorage.setItem(KEY, JSON.stringify(products));
+
+    return newProduct;
+  }
+
+  static async save(products: any[]) {
+    localStorage.setItem(KEY, JSON.stringify(products));
   }
 }

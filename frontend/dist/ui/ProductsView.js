@@ -1,10 +1,14 @@
 export async function renderProducts(root) {
     let products = JSON.parse(localStorage.getItem("products") || "[]");
+    const oldModal = document.getElementById("editModal");
+    if (oldModal)
+        oldModal.remove();
     root.innerHTML = `
     <div class="card">
       <h2>Add Product</h2>
 
-      <form id="form" class="horizontal-form" style="flex-direction: column; align-items: stretch; gap: 12px;">
+      <form id="form" class="horizontal-form"
+        style="flex-direction: column; align-items: stretch; gap: 12px;">
 
         <div class="field">
           <label>Product Name</label>
@@ -65,6 +69,8 @@ export async function renderProducts(root) {
       </div>
 
       ${products.map((p, i) => {
+        const buy = Number(p.buyPrice ?? 0);
+        const sell = Number(p.sellPrice ?? 0);
         let status = "OK";
         let color = "#22c55e";
         if (p.stock <= 0) {
@@ -79,8 +85,8 @@ export async function renderProducts(root) {
           <div class="product-row" style="display:grid; grid-template-columns: 2fr 1.5fr 1fr 1fr 1fr 1fr 120px; gap:10px; align-items:center;">
             <span>${p.name}</span>
             <span>${p.category}</span>
-            <span>₱${p.buy}</span>
-            <span>₱${p.sell}</span>
+            <span>₱${buy}</span>
+            <span>₱${sell}</span>
             <span>${p.stock}</span>
 
             <span style="color:${color}; font-weight:600;">
@@ -96,23 +102,22 @@ export async function renderProducts(root) {
     }).join("")}
     </div>
 
-    <!-- EDIT MODAL -->
-    <div id="editModal" class="modal">
+    <div id="editModal" class="modal hidden">
       <div class="modal-content">
         <h3>Edit Product</h3>
 
         <div class="input-group">
-          <label>Product Name</label>
+          <label>Name</label>
           <input id="e_name" />
         </div>
 
         <div class="input-group">
-          <label>Buying Price</label>
+          <label>Buy Price</label>
           <input id="e_buy" type="number" />
         </div>
 
         <div class="input-group">
-          <label>Selling Price</label>
+          <label>Sell Price</label>
           <input id="e_sell" type="number" />
         </div>
 
@@ -128,66 +133,55 @@ export async function renderProducts(root) {
       </div>
     </div>
   `;
-    /* =========================
-       ADD PRODUCT
-    ========================= */
+    /* ADD */
     document.getElementById("form").addEventListener("submit", (e) => {
         e.preventDefault();
         products.push({
             name: document.getElementById("name").value,
             category: document.getElementById("category").value,
-            buy: Number(document.getElementById("buy").value),
-            sell: Number(document.getElementById("sell").value),
+            buyPrice: Number(document.getElementById("buy").value),
+            sellPrice: Number(document.getElementById("sell").value),
             stock: Number(document.getElementById("stock").value),
             minStock: Number(document.getElementById("minStock").value),
         });
         localStorage.setItem("products", JSON.stringify(products));
         renderProducts(root);
     });
-    /* =========================
-       MODAL + ACTIONS (FINAL FIX)
-    ========================= */
+    /* MODAL */
     const modal = document.getElementById("editModal");
     let editIndex = -1;
     root.addEventListener("click", (e) => {
         const target = e.target;
         const editBtn = target.closest(".edit-btn");
         const deleteBtn = target.closest(".delete-btn");
-        const saveBtn = target.closest("#saveEdit");
-        const cancelBtn = target.closest("#cancelEdit");
-        /* EDIT */
         if (editBtn) {
             editIndex = Number(editBtn.dataset.id);
             const p = products[editIndex];
             document.getElementById("e_name").value = p.name;
-            document.getElementById("e_buy").value = p.buy;
-            document.getElementById("e_sell").value = p.sell;
+            document.getElementById("e_buy").value = p.buyPrice;
+            document.getElementById("e_sell").value = p.sellPrice;
             document.getElementById("e_stock").value = p.stock;
-            modal.classList.add("show");
+            modal.classList.remove("hidden");
         }
-        /* DELETE */
         if (deleteBtn) {
-            const id = Number(deleteBtn.dataset.id);
-            products.splice(id, 1);
+            products.splice(Number(deleteBtn.dataset.id), 1);
             localStorage.setItem("products", JSON.stringify(products));
             renderProducts(root);
         }
-        /* CANCEL */
-        if (cancelBtn) {
-            modal.classList.remove("show");
-        }
-        /* SAVE (FINAL FIX) */
-        if (saveBtn) {
-            if (editIndex === -1)
-                return;
-            const p = products[editIndex];
-            p.name = document.getElementById("e_name").value;
-            p.buy = Number(document.getElementById("e_buy").value);
-            p.sell = Number(document.getElementById("e_sell").value);
-            p.stock = Number(document.getElementById("e_stock").value);
-            localStorage.setItem("products", JSON.stringify(products));
-            modal.classList.remove("show");
-            renderProducts(root);
-        }
+    });
+    document.getElementById("cancelEdit")?.addEventListener("click", () => {
+        modal.classList.add("hidden");
+    });
+    document.getElementById("saveEdit")?.addEventListener("click", () => {
+        if (editIndex === -1)
+            return;
+        const p = products[editIndex];
+        p.name = document.getElementById("e_name").value;
+        p.buyPrice = Number(document.getElementById("e_buy").value);
+        p.sellPrice = Number(document.getElementById("e_sell").value);
+        p.stock = Number(document.getElementById("e_stock").value);
+        localStorage.setItem("products", JSON.stringify(products));
+        modal.classList.add("hidden");
+        renderProducts(root);
     });
 }

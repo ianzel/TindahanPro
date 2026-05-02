@@ -1,22 +1,48 @@
-const API = "http://127.0.0.1:3000/sales";
+const KEY = "sales";
 
 export class SalesService {
   static async list() {
-    const res = await fetch(API);
-    return res.json();
+    return JSON.parse(localStorage.getItem(KEY) || "[]");
   }
 
-  static async record(productId: number, quantity: number) {
-    const res = await fetch(API, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ productId, quantity }),
-    });
+  static async record(productIndex: number, quantity: number) {
+    const products = JSON.parse(localStorage.getItem("products") || "[]");
+    const sales = JSON.parse(localStorage.getItem(KEY) || "[]");
 
-    if (!res.ok) {
-      throw new Error("Failed to record sale");
+    quantity = Number(quantity);
+
+    const product = products[productIndex];
+
+    if (!product) {
+      alert("Product not found");
+      return;
     }
 
-    return res.json();
+    if (!quantity || quantity <= 0) {
+      alert("Invalid quantity");
+      return;
+    }
+
+    if (quantity > product.stock) {
+      alert("Not enough stock");
+      return;
+    }
+
+    const unitPrice = Number(product.sell || 0);
+
+    const newSale = {
+      productName: product.name,
+      quantity,
+      unitPrice,
+      totalAmount: unitPrice * quantity,
+      dateISO: new Date().toISOString(),
+    };
+
+    sales.push(newSale);
+
+    product.stock -= quantity;
+
+    localStorage.setItem("products", JSON.stringify(products));
+    localStorage.setItem(KEY, JSON.stringify(sales));
   }
 }

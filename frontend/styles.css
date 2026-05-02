@@ -1021,7 +1021,9 @@ button:hover {
   background-color: #45a049;
 }
 
-/* RESET */
+/* =========================
+   RESET
+========================= */
 * {
   margin: 0;
   padding: 0;
@@ -1035,13 +1037,17 @@ body {
   background: #f3f4f6;
 }
 
-/* APP */
+/* =========================
+   APP LAYOUT
+========================= */
 #main-app {
   display: flex;
   height: 100vh;
 }
 
-/* SIDEBAR (RESTORED GOOD LOOK) */
+/* =========================
+   SIDEBAR
+========================= */
 .sidebar {
   width: 240px;
   background: #111827;
@@ -1059,7 +1065,6 @@ body {
   text-align: center;
 }
 
-/* NAV */
 .nav {
   display: flex;
   flex-direction: column;
@@ -1085,14 +1090,18 @@ body {
   background: #2563eb;
 }
 
-/* MAIN */
+/* =========================
+   MAIN AREA
+========================= */
 .main {
   flex: 1;
   display: flex;
   flex-direction: column;
 }
 
-/* HEADER */
+/* =========================
+   HEADER
+========================= */
 .header {
   height: 55px;
   background: white;
@@ -1103,7 +1112,9 @@ body {
   border-bottom: 1px solid #ddd;
 }
 
-/* AVATAR */
+/* =========================
+   AVATAR
+========================= */
 .avatar {
   width: 38px;
   height: 38px;
@@ -1117,23 +1128,29 @@ body {
   cursor: pointer;
 }
 
-/* PROFILE MENU (FIXED CLICK + LOOKS GOOD) */
-#profile-menu {
+/* =========================
+   PROFILE MENU (FIXED CLICK)
+========================= */
+.profile-menu {
   position: absolute;
-  top: 60px;
+  top: 55px;
   right: 20px;
+
   background: white;
   border-radius: 12px;
   padding: 10px;
+
   display: none;
   flex-direction: column;
   gap: 8px;
+
   min-width: 200px;
-  z-index: 9999;
+
+  z-index: 10000;
   box-shadow: 0 10px 25px rgba(0,0,0,0.2);
 }
 
-#profile-menu.show {
+.profile-menu.show {
   display: flex;
 }
 
@@ -1142,8 +1159,8 @@ body {
   border-bottom: 1px solid #eee;
 }
 
-/* BUTTONS (MODERN LOOK) */
-#profile-menu button {
+/* PROFILE BUTTONS */
+.profile-menu button {
   padding: 10px;
   border: none;
   border-radius: 8px;
@@ -1152,7 +1169,7 @@ body {
   font-weight: 500;
 }
 
-#profile-menu button:hover {
+.profile-menu button:hover {
   transform: scale(1.03);
 }
 
@@ -1166,7 +1183,7 @@ body {
   background: #1d4ed8;
 }
 
-/* LOGOUT */
+/* LOGOUT BUTTON */
 #logout-btn {
   background: #ef4444;
   color: white;
@@ -1176,14 +1193,175 @@ body {
   background: #dc2626;
 }
 
-/* CONTENT */
+/* =========================
+   CONTENT
+========================= */
 #app {
   flex: 1;
   padding: 20px;
   overflow-y: auto;
 }
 
-/* MODAL */
-.hidden {
-  display: none;
+/* =========================
+   MODAL (FIXED)
+========================= */
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  z-index: 99999;
+}
+
+.modal.hidden {
+  display: none !important;
+  pointer-events: none !important;
+}
+
+.modal-card {
+  width: 340px;
+  background: #fff;
+
+  padding: 20px;
+  border-radius: 12px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+.modal-card input {
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  outline: none;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.modal-actions button {
+  padding: 8px 14px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+/* CANCEL */
+#cancel-profile {
+  background: #f87171;
+  color: white;
+}
+
+#cancel-profile:hover {
+  background: #ef4444;
+}
+
+/* SAVE */
+#save-profile {
+  background: #2563eb;
+  color: white;
+}
+
+#save-profile:hover {
+  background: #1d4ed8;
+}
+
+/* =========================
+   CREDIT DELETE BUTTON
+========================= */
+.credit-delete-btn {
+  background: #ef4444;
+  color: white;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.credit-delete-btn:hover {
+  background: #dc2626;
+}
+
+.sales-reset-btn {
+  background: #6b7280;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.sales-reset-btn:hover {
+  background: #4b5563;
+}
+
+.sales-reset-btn {
+  background: #ef4444;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.sales-reset-btn:hover {
+  background: #dc2626;
+}
+
+.btn-cancel {
+  background: #ef4444;
+  color: white;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.btn-cancel:hover {
+  background: #dc2626;
+}
+
+/* CANCEL BUTTON (RED) */
+.btn-cancel {
+  background: #ef4444;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.btn-cancel:hover {
+  background: #dc2626;
+}
+
+/* SAVE BUTTON (BLUE) */
+.btn-save {
+  background: #2563eb;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.btn-save:hover {
+  background: #1d4ed8;
 }

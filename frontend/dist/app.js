@@ -12,7 +12,7 @@ const loginScreen = document.getElementById("login-screen");
 const mainApp = document.getElementById("main-app");
 let currentUser = null;
 const get = (id) => document.getElementById(id);
-/* PROFILE UI */
+/* PROFILE */
 function loadProfileUI() {
     if (!currentUser)
         return;
@@ -36,74 +36,81 @@ function setActive(id) {
     document.querySelectorAll(".nav-btn").forEach(b => b.classList.remove("active"));
     get(id)?.classList.add("active");
 }
-/* VIEW */
+/* VIEW RENDER */
 async function show(view) {
-    root.innerHTML = "Loading...";
+    root.innerHTML = "";
+    const container = document.createElement("div");
+    root.appendChild(container);
     switch (view) {
         case "dashboard":
-            await renderDashboard(root);
+            await renderDashboard(container);
             break;
         case "products":
-            await renderProducts(root);
+            await renderProducts(container);
             break;
         case "sales":
-            await renderSales(root);
+            await renderSales(container);
             break;
         case "reports":
-            await renderReports(root);
+            await renderReports(container);
             break;
         case "suppliers":
-            renderSuppliers(root);
+            renderSuppliers(container);
             break;
         case "credit":
-            renderCredits(root);
+            renderCredits(container);
             break;
     }
 }
-/* UI INIT (FIXED CLICK ISSUE) */
+/* UI INIT */
 function initUI() {
     const avatar = get("profile-avatar");
     const menu = get("profile-menu");
     const modal = get("profile-modal");
-    if (!avatar || !menu)
-        return;
-    /* OPEN MENU */
-    avatar.onclick = (e) => {
+    /* FORCE CLOSE MODAL ON START */
+    modal?.classList.add("hidden");
+    /* PROFILE MENU TOGGLE */
+    avatar?.addEventListener("click", (e) => {
         e.stopPropagation();
-        menu.classList.toggle("show");
-    };
-    /* CLOSE OUTSIDE */
-    document.addEventListener("click", () => {
-        menu.classList.remove("show");
+        menu?.classList.toggle("show");
     });
-    /* STOP MENU CLOSE */
-    menu.onclick = (e) => {
+    document.addEventListener("click", () => {
+        menu?.classList.remove("show");
+    });
+    menu?.addEventListener("click", e => e.stopPropagation());
+    /* OPEN EDIT PROFILE */
+    get("open-profile-edit")?.addEventListener("click", (e) => {
         e.stopPropagation();
-    };
-    /* 🔥 FIXED: EDIT PROFILE ALWAYS WORKS */
-    const editBtn = get("open-profile-edit");
-    if (editBtn) {
-        editBtn.onclick = (e) => {
-            e.stopPropagation();
-            menu.classList.remove("show");
-            if (modal)
-                modal.classList.remove("hidden");
-            const input = get("edit-username");
-            if (input && currentUser) {
-                input.value = currentUser.username;
-            }
-        };
-    }
+        menu?.classList.remove("show");
+        modal?.classList.remove("hidden");
+        get("edit-username").value =
+            currentUser?.username || "";
+        get("edit-email").value =
+            currentUser?.email || "";
+        get("edit-password").value = "";
+        get("edit-password-confirm").value = "";
+    });
     /* CANCEL */
     get("cancel-profile")?.addEventListener("click", () => {
         modal?.classList.add("hidden");
     });
     /* SAVE */
     get("save-profile")?.addEventListener("click", () => {
-        const input = get("edit-username");
-        if (!input || !currentUser)
+        const name = get("edit-username");
+        const email = get("edit-email");
+        const pass = get("edit-password");
+        const confirm = get("edit-password-confirm");
+        if (!currentUser)
             return;
-        currentUser.username = input.value;
+        if (pass.value !== confirm.value) {
+            alert("Passwords do not match");
+            return;
+        }
+        currentUser.username = name.value;
+        currentUser.email = email.value;
+        if (pass.value) {
+            currentUser.password = pass.value;
+        }
         localStorage.setItem("tp_user", JSON.stringify(currentUser));
         loadProfileUI();
         modal?.classList.add("hidden");
@@ -114,12 +121,15 @@ function initUI() {
         startLogin();
     });
     /* DARK MODE */
+    if (localStorage.getItem("dark") === "true") {
+        document.body.classList.add("dark");
+    }
     get("dark-toggle")?.addEventListener("click", () => {
         document.body.classList.toggle("dark");
         localStorage.setItem("dark", String(document.body.classList.contains("dark")));
     });
 }
-/* START APP */
+/* START */
 function startApp() {
     currentUser = AuthService.getUser();
     if (!currentUser)
@@ -148,13 +158,11 @@ function startLogin() {
         show(v);
     });
 });
-/* BOOT */
 window.addEventListener("DOMContentLoaded", () => {
     try {
         AuthService.getUser() ? startApp() : startLogin();
     }
-    catch (err) {
-        console.error(err);
+    catch {
         startLogin();
     }
 });

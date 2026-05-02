@@ -31,13 +31,13 @@ let currentUser: User | null = null;
 
 const get = (id: string) => document.getElementById(id);
 
-/* PROFILE UI */
+/* PROFILE */
 function loadProfileUI() {
   if (!currentUser) return;
 
   const nameEl = get("user-name");
   const emailEl = get("user-email");
-  const avatar = get("profile-avatar");
+  const avatar = get("profile-avatar") as HTMLElement;
 
   if (nameEl) nameEl.textContent = currentUser.username;
   if (emailEl) emailEl.textContent = currentUser.email ?? "";
@@ -59,72 +59,72 @@ function setActive(id: string) {
   get(id)?.classList.add("active");
 }
 
-/* VIEW */
+/* VIEW RENDER */
 async function show(view: View) {
-  root.innerHTML = "Loading...";
+  root.innerHTML = "";
+
+  const container = document.createElement("div");
+  root.appendChild(container);
 
   switch (view) {
     case "dashboard":
-      await renderDashboard(root);
+      await renderDashboard(container);
       break;
     case "products":
-      await renderProducts(root);
+      await renderProducts(container);
       break;
     case "sales":
-      await renderSales(root);
+      await renderSales(container);
       break;
     case "reports":
-      await renderReports(root);
+      await renderReports(container);
       break;
     case "suppliers":
-      renderSuppliers(root);
+      renderSuppliers(container);
       break;
     case "credit":
-      renderCredits(root);
+      renderCredits(container);
       break;
   }
 }
 
-/* UI INIT (FIXED CLICK ISSUE) */
+/* UI INIT */
 function initUI() {
   const avatar = get("profile-avatar");
   const menu = get("profile-menu");
   const modal = get("profile-modal");
 
-  if (!avatar || !menu) return;
+  /* FORCE CLOSE MODAL ON START */
+  modal?.classList.add("hidden");
 
-  /* OPEN MENU */
-  avatar.onclick = (e) => {
+  /* PROFILE MENU TOGGLE */
+  avatar?.addEventListener("click", (e) => {
     e.stopPropagation();
-    menu.classList.toggle("show");
-  };
-
-  /* CLOSE OUTSIDE */
-  document.addEventListener("click", () => {
-    menu.classList.remove("show");
+    menu?.classList.toggle("show");
   });
 
-  /* STOP MENU CLOSE */
-  menu.onclick = (e) => {
+  document.addEventListener("click", () => {
+    menu?.classList.remove("show");
+  });
+
+  menu?.addEventListener("click", e => e.stopPropagation());
+
+  /* OPEN EDIT PROFILE */
+  get("open-profile-edit")?.addEventListener("click", (e) => {
     e.stopPropagation();
-  };
 
-  /* 🔥 FIXED: EDIT PROFILE ALWAYS WORKS */
-  const editBtn = get("open-profile-edit");
-  if (editBtn) {
-    editBtn.onclick = (e) => {
-      e.stopPropagation();
+    menu?.classList.remove("show");
+    modal?.classList.remove("hidden");
 
-      menu.classList.remove("show");
+    (get("edit-username") as HTMLInputElement).value =
+      currentUser?.username || "";
 
-      if (modal) modal.classList.remove("hidden");
+    (get("edit-email") as HTMLInputElement).value =
+      currentUser?.email || "";
 
-      const input = get("edit-username") as HTMLInputElement;
-      if (input && currentUser) {
-        input.value = currentUser.username;
-      }
-    };
-  }
+    (get("edit-password") as HTMLInputElement).value = "";
+    (get("edit-password-confirm") as HTMLInputElement).value = "";
+  });
 
   /* CANCEL */
   get("cancel-profile")?.addEventListener("click", () => {
@@ -133,11 +133,24 @@ function initUI() {
 
   /* SAVE */
   get("save-profile")?.addEventListener("click", () => {
-    const input = get("edit-username") as HTMLInputElement;
+    const name = get("edit-username") as HTMLInputElement;
+    const email = get("edit-email") as HTMLInputElement;
+    const pass = get("edit-password") as HTMLInputElement;
+    const confirm = get("edit-password-confirm") as HTMLInputElement;
 
-    if (!input || !currentUser) return;
+    if (!currentUser) return;
 
-    currentUser.username = input.value;
+    if (pass.value !== confirm.value) {
+      alert("Passwords do not match");
+      return;
+    }
+
+    currentUser.username = name.value;
+    currentUser.email = email.value;
+
+    if (pass.value) {
+      (currentUser as any).password = pass.value;
+    }
 
     localStorage.setItem("tp_user", JSON.stringify(currentUser));
 
@@ -152,13 +165,21 @@ function initUI() {
   });
 
   /* DARK MODE */
+  if (localStorage.getItem("dark") === "true") {
+    document.body.classList.add("dark");
+  }
+
   get("dark-toggle")?.addEventListener("click", () => {
     document.body.classList.toggle("dark");
-    localStorage.setItem("dark", String(document.body.classList.contains("dark")));
+
+    localStorage.setItem(
+      "dark",
+      String(document.body.classList.contains("dark"))
+    );
   });
 }
 
-/* START APP */
+/* START */
 function startApp() {
   currentUser = AuthService.getUser();
 
@@ -194,12 +215,10 @@ function startLogin() {
     });
   });
 
-/* BOOT */
 window.addEventListener("DOMContentLoaded", () => {
   try {
     AuthService.getUser() ? startApp() : startLogin();
-  } catch (err) {
-    console.error(err);
+  } catch {
     startLogin();
   }
 });

@@ -1,11 +1,15 @@
 export async function renderProducts(root: HTMLElement) {
   let products = JSON.parse(localStorage.getItem("products") || "[]");
 
+  const oldModal = document.getElementById("editModal");
+  if (oldModal) oldModal.remove();
+
   root.innerHTML = `
     <div class="card">
       <h2>Add Product</h2>
 
-      <form id="form" class="horizontal-form" style="flex-direction: column; align-items: stretch; gap: 12px;">
+      <form id="form" class="horizontal-form"
+        style="flex-direction: column; align-items: stretch; gap: 12px;">
 
         <div class="field">
           <label>Product Name</label>
@@ -66,6 +70,9 @@ export async function renderProducts(root: HTMLElement) {
       </div>
 
       ${products.map((p: any, i: number) => {
+        const buy = Number(p.buyPrice ?? 0);
+        const sell = Number(p.sellPrice ?? 0);
+
         let status = "OK";
         let color = "#22c55e";
 
@@ -81,8 +88,8 @@ export async function renderProducts(root: HTMLElement) {
           <div class="product-row" style="display:grid; grid-template-columns: 2fr 1.5fr 1fr 1fr 1fr 1fr 120px; gap:10px; align-items:center;">
             <span>${p.name}</span>
             <span>${p.category}</span>
-            <span>₱${p.buy}</span>
-            <span>₱${p.sell}</span>
+            <span>₱${buy}</span>
+            <span>₱${sell}</span>
             <span>${p.stock}</span>
 
             <span style="color:${color}; font-weight:600;">
@@ -98,23 +105,22 @@ export async function renderProducts(root: HTMLElement) {
       }).join("")}
     </div>
 
-    <!-- EDIT MODAL -->
-    <div id="editModal" class="modal">
+    <div id="editModal" class="modal hidden">
       <div class="modal-content">
         <h3>Edit Product</h3>
 
         <div class="input-group">
-          <label>Product Name</label>
+          <label>Name</label>
           <input id="e_name" />
         </div>
 
         <div class="input-group">
-          <label>Buying Price</label>
+          <label>Buy Price</label>
           <input id="e_buy" type="number" />
         </div>
 
         <div class="input-group">
-          <label>Selling Price</label>
+          <label>Sell Price</label>
           <input id="e_sell" type="number" />
         </div>
 
@@ -131,17 +137,15 @@ export async function renderProducts(root: HTMLElement) {
     </div>
   `;
 
-  /* =========================
-     ADD PRODUCT
-  ========================= */
+  /* ADD */
   document.getElementById("form")!.addEventListener("submit", (e) => {
     e.preventDefault();
 
     products.push({
       name: (document.getElementById("name") as HTMLInputElement).value,
       category: (document.getElementById("category") as HTMLSelectElement).value,
-      buy: Number((document.getElementById("buy") as HTMLInputElement).value),
-      sell: Number((document.getElementById("sell") as HTMLInputElement).value),
+      buyPrice: Number((document.getElementById("buy") as HTMLInputElement).value),
+      sellPrice: Number((document.getElementById("sell") as HTMLInputElement).value),
       stock: Number((document.getElementById("stock") as HTMLInputElement).value),
       minStock: Number((document.getElementById("minStock") as HTMLInputElement).value),
     });
@@ -150,9 +154,7 @@ export async function renderProducts(root: HTMLElement) {
     renderProducts(root);
   });
 
-  /* =========================
-     MODAL + ACTIONS (FINAL FIX)
-  ========================= */
+  /* MODAL */
   const modal = document.getElementById("editModal")!;
   let editIndex = -1;
 
@@ -161,50 +163,43 @@ export async function renderProducts(root: HTMLElement) {
 
     const editBtn = target.closest(".edit-btn") as HTMLElement;
     const deleteBtn = target.closest(".delete-btn") as HTMLElement;
-    const saveBtn = target.closest("#saveEdit") as HTMLElement;
-    const cancelBtn = target.closest("#cancelEdit") as HTMLElement;
 
-    /* EDIT */
     if (editBtn) {
       editIndex = Number(editBtn.dataset.id);
       const p = products[editIndex];
 
       (document.getElementById("e_name") as HTMLInputElement).value = p.name;
-      (document.getElementById("e_buy") as HTMLInputElement).value = p.buy;
-      (document.getElementById("e_sell") as HTMLInputElement).value = p.sell;
+      (document.getElementById("e_buy") as HTMLInputElement).value = p.buyPrice;
+      (document.getElementById("e_sell") as HTMLInputElement).value = p.sellPrice;
       (document.getElementById("e_stock") as HTMLInputElement).value = p.stock;
 
-      modal.classList.add("show");
+      modal.classList.remove("hidden");
     }
 
-    /* DELETE */
     if (deleteBtn) {
-      const id = Number(deleteBtn.dataset.id);
-      products.splice(id, 1);
+      products.splice(Number(deleteBtn.dataset.id), 1);
       localStorage.setItem("products", JSON.stringify(products));
       renderProducts(root);
     }
+  });
 
-    /* CANCEL */
-    if (cancelBtn) {
-      modal.classList.remove("show");
-    }
+  document.getElementById("cancelEdit")?.addEventListener("click", () => {
+    modal.classList.add("hidden");
+  });
 
-    /* SAVE (FINAL FIX) */
-    if (saveBtn) {
-      if (editIndex === -1) return;
+  document.getElementById("saveEdit")?.addEventListener("click", () => {
+    if (editIndex === -1) return;
 
-      const p = products[editIndex];
+    const p = products[editIndex];
 
-      p.name = (document.getElementById("e_name") as HTMLInputElement).value;
-      p.buy = Number((document.getElementById("e_buy") as HTMLInputElement).value);
-      p.sell = Number((document.getElementById("e_sell") as HTMLInputElement).value);
-      p.stock = Number((document.getElementById("e_stock") as HTMLInputElement).value);
+    p.name = (document.getElementById("e_name") as HTMLInputElement).value;
+    p.buyPrice = Number((document.getElementById("e_buy") as HTMLInputElement).value);
+    p.sellPrice = Number((document.getElementById("e_sell") as HTMLInputElement).value);
+    p.stock = Number((document.getElementById("e_stock") as HTMLInputElement).value);
 
-      localStorage.setItem("products", JSON.stringify(products));
+    localStorage.setItem("products", JSON.stringify(products));
 
-      modal.classList.remove("show");
-      renderProducts(root);
-    }
+    modal.classList.add("hidden");
+    renderProducts(root);
   });
 }
