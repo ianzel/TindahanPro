@@ -33,7 +33,7 @@ export async function renderCredits(root) {
             <input id="date" type="date" required />
           </div>
 
-          <button type="submit" class="btn-primary" style="align-self:flex-end;">
+          <button type="submit" class="btn-primary">
             Add Credit
           </button>
         </form>
@@ -43,25 +43,37 @@ export async function renderCredits(root) {
         <h3>Credit List</h3>
 
         ${credits.length === 0
-            ? `<p style="margin-top:10px;">No credits yet</p>`
+            ? `<p>No credits yet</p>`
             : credits.map((c) => `
-              <div class="credit-item" style="padding:12px 0; border-bottom:1px solid #f1f5f9;">
+              <div style="padding:12px 0; border-bottom:1px solid #eee;">
 
                 <div style="display:flex; justify-content:space-between;">
                   <strong>${c.customer || "Unknown Customer"}</strong>
                   <span>₱${Number(c.amount).toFixed(2)}</span>
                 </div>
 
-                <div style="font-size:13px; color:#64748b; margin-top:4px;">
+                <div style="font-size:13px; color:#666;">
                   ${c.desc || ""}
                 </div>
 
-                <div style="display:flex; justify-content:space-between; margin-top:8px; font-size:12px; color:#94a3b8;">
+                <div style="display:flex; justify-content:space-between; margin-top:8px;">
+
                   <span>${c.dueDate}</span>
 
-                  <button class="credit-delete-btn" data-id="${c.id}">
+                  <!-- DELETE ONLY -->
+                  <button 
+                    class="delete-btn"
+                    data-id="${c.id}"
+                    style="
+                      background:#dc2626;
+                      color:white;
+                      border:none;
+                      padding:5px 10px;
+                      border-radius:6px;
+                      cursor:pointer;">
                     Delete
                   </button>
+
                 </div>
 
               </div>
@@ -72,27 +84,26 @@ export async function renderCredits(root) {
     };
     const attachEvents = () => {
         const form = document.getElementById("credit-form");
+        // CREATE CREDIT
         form.onsubmit = async (e) => {
             e.preventDefault();
-            const name = document.getElementById("name").value;
-            const desc = document.getElementById("desc").value;
-            const amount = Number(document.getElementById("amount").value);
-            const date = document.getElementById("date").value;
             await CreditService.create({
-                customerName: name,
-                desc: desc, // ✅ FIXED
-                amount,
-                dueDate: date,
+                customerName: document.getElementById("name").value,
+                desc: document.getElementById("desc").value,
+                amount: Number(document.getElementById("amount").value),
+                dueDate: document.getElementById("date").value,
             });
             render();
         };
+        // DELETE ONLY (SIMPLE + RELIABLE)
         root.onclick = async (e) => {
-            const target = e.target;
-            if (target.classList.contains("credit-delete-btn")) {
-                const id = Number(target.dataset.id);
-                await CreditService.delete(id);
-                render();
-            }
+            const el = e.target;
+            const deleteBtn = el.closest(".delete-btn");
+            if (!deleteBtn)
+                return;
+            const id = Number(deleteBtn.getAttribute("data-id"));
+            await CreditService.delete(id);
+            render();
         };
     };
     render();

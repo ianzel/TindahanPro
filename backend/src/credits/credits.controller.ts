@@ -1,22 +1,28 @@
-import { Body, Controller, Get, Post, Delete, Param } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
 import { CreditsService } from './credits.service';
 
 @Controller('credits')
 export class CreditsController {
-  constructor(private readonly creditsService: CreditsService) {}
-
-  @Post()
-  create(@Body() data: any) {
-    return this.creditsService.create(data);
-  }
+  constructor(private readonly service: CreditsService) {}
 
   @Get()
   findAll() {
-    return this.creditsService.findAll();
+    return this.service.findAll();
+  }
+
+  @Post()
+  create(@Body() data: any) {
+    return this.service.create(data);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.creditsService.remove(Number(id));
+  remove(@Param('id') id: number) {
+    return this.service.delete(Number(id));
+  }
+
+  // ✅ THIS IS THE CRITICAL FIX
+  @Patch(':id/toggle')
+  toggle(@Param('id') id: number) {
+    return this.service.toggle(Number(id));
   }
 }

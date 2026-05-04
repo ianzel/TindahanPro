@@ -5,21 +5,26 @@ import { Supplier } from './supplier.entity';
 
 @Injectable()
 export class SuppliersService {
+
   constructor(
     @InjectRepository(Supplier)
     private repo: Repository<Supplier>,
   ) {}
 
-  create(data: any) {
-    const s = this.repo.create(data);
-    return this.repo.save(s);
-  }
-
   findAll() {
     return this.repo.find({ order: { id: 'DESC' } });
   }
 
-  remove(id: number) {
+  create(data: any) {
+    const supplier = this.repo.create({
+      name: data.name,
+      contact: data.contact,
+    });
+
+    return this.repo.save(supplier);
+  }
+
+  delete(id: number) {
     return this.repo.delete(id);
   }
 }

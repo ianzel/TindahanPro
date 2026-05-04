@@ -6,24 +6,23 @@ export class CreditService {
     return res.json();
   }
 
-  static async create(data: {
-    customerName: string;
-    desc?: string;
-    amount: number;
-    dueDate: string;
-  }) {
-    await fetch(API, {
+  static async create(data: any) {
+    return fetch(API, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
     });
   }
 
   static async delete(id: number) {
-    await fetch(`${API}/${id}`, {
+    return fetch(`${API}/${id}`, {
       method: "DELETE",
+    });
+  }
+
+  static async toggle(id: number) {
+    return fetch(`${API}/${id}/toggle`, {
+      method: "PATCH",
     });
   }
 }

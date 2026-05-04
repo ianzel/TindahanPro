@@ -5,17 +5,20 @@ export class CreditService {
         return res.json();
     }
     static async create(data) {
-        await fetch(API, {
+        return fetch(API, {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data),
         });
     }
     static async delete(id) {
-        await fetch(`${API}/${id}`, {
+        return fetch(`${API}/${id}`, {
             method: "DELETE",
+        });
+    }
+    static async toggle(id) {
+        return fetch(`${API}/${id}/toggle`, {
+            method: "PATCH",
         });
     }
 }
