@@ -1,5 +1,6 @@
+import { ProductService } from "../services/ProductService.js";
 export async function renderProducts(root) {
-    let products = JSON.parse(localStorage.getItem("products") || "[]");
+    let products = await ProductService.list();
     const oldModal = document.getElementById("editModal");
     if (oldModal)
         oldModal.remove();
@@ -126,17 +127,17 @@ export async function renderProducts(root) {
           <input id="e_stock" type="number" />
         </div>
 
-       <div class="modal-actions" style="display:flex; justify-content:flex-end; gap:10px; margin-top:15px;">
-  <button id="cancelEdit" class="btn-cancel">Cancel</button>
-  <button id="saveEdit" class="btn-save">Save</button>
-</div>
+        <div class="modal-actions" style="display:flex; justify-content:flex-end; gap:10px; margin-top:15px;">
+          <button id="cancelEdit" class="btn-cancel">Cancel</button>
+          <button id="saveEdit" class="btn-save">Save</button>
+        </div>
       </div>
     </div>
   `;
     /* ADD */
-    document.getElementById("form").addEventListener("submit", (e) => {
+    document.getElementById("form").addEventListener("submit", async (e) => {
         e.preventDefault();
-        products.push({
+        await ProductService.create({
             name: document.getElementById("name").value,
             category: document.getElementById("category").value,
             buyPrice: Number(document.getElementById("buy").value),
@@ -144,13 +145,12 @@ export async function renderProducts(root) {
             stock: Number(document.getElementById("stock").value),
             minStock: Number(document.getElementById("minStock").value),
         });
-        localStorage.setItem("products", JSON.stringify(products));
-        renderProducts(root);
+        await renderProducts(root);
     });
-    /* MODAL */
+    /* MODAL + DELETE */
     const modal = document.getElementById("editModal");
     let editIndex = -1;
-    root.addEventListener("click", (e) => {
+    root.addEventListener("click", async (e) => {
         const target = e.target;
         const editBtn = target.closest(".edit-btn");
         const deleteBtn = target.closest(".delete-btn");
@@ -164,24 +164,19 @@ export async function renderProducts(root) {
             modal.classList.remove("hidden");
         }
         if (deleteBtn) {
-            products.splice(Number(deleteBtn.dataset.id), 1);
-            localStorage.setItem("products", JSON.stringify(products));
-            renderProducts(root);
+            const index = Number(deleteBtn.dataset.id);
+            const product = products[index];
+            await ProductService.delete(product.id);
+            await renderProducts(root);
         }
     });
     document.getElementById("cancelEdit")?.addEventListener("click", () => {
         modal.classList.add("hidden");
     });
-    document.getElementById("saveEdit")?.addEventListener("click", () => {
+    document.getElementById("saveEdit")?.addEventListener("click", async () => {
         if (editIndex === -1)
             return;
-        const p = products[editIndex];
-        p.name = document.getElementById("e_name").value;
-        p.buyPrice = Number(document.getElementById("e_buy").value);
-        p.sellPrice = Number(document.getElementById("e_sell").value);
-        p.stock = Number(document.getElementById("e_stock").value);
-        localStorage.setItem("products", JSON.stringify(products));
+        // ⚠️ (Edit not yet connected to backend — kept as-is)
         modal.classList.add("hidden");
-        renderProducts(root);
     });
 }

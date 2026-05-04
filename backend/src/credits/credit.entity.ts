@@ -8,6 +8,9 @@ export class Credit {
   @Column()
   customer!: string;
 
+  @Column({ nullable: true })
+  desc!: string;
+
   @Column('decimal', { precision: 10, scale: 2 })
   amount!: number;
 

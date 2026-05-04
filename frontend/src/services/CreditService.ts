@@ -1,34 +1,29 @@
 const API = "http://localhost:3000/credits";
 
 export class CreditService {
-
   static async list() {
     const res = await fetch(API);
-
-    if (!res.ok) {
-      throw new Error("Failed to load credits");
-    }
-
     return res.json();
   }
 
   static async create(data: {
-    customer: string;
+    customerName: string;
+    desc?: string;
     amount: number;
     dueDate: string;
   }) {
-    const res = await fetch(API, {
+    await fetch(API, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(data),
     });
+  }
 
-    if (!res.ok) {
-      throw new Error("Failed to create credit");
-    }
-
-    return res.json();
+  static async delete(id: number) {
+    await fetch(`${API}/${id}`, {
+      method: "DELETE",
+    });
   }
 }

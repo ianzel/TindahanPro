@@ -1,11 +1,15 @@
+import { CreditService } from "../services/CreditService.js";
 export async function renderCredits(root) {
-    let credits = JSON.parse(localStorage.getItem("credits") || "[]");
-    const render = () => {
+    let credits = [];
+    const loadCredits = async () => {
+        credits = await CreditService.list();
+    };
+    const render = async () => {
+        await loadCredits();
         root.innerHTML = `
       <div class="card">
         <h2>Credit Management</h2>
 
-        <!-- ADD CREDIT -->
         <form id="credit-form" class="horizontal-form"
           style="flex-direction: column; align-items: stretch; gap: 12px;">
 
@@ -16,7 +20,7 @@ export async function renderCredits(root) {
 
           <div class="field">
             <label>Description</label>
-            <input id="desc" required />
+            <input id="desc" />
           </div>
 
           <div class="field">
@@ -40,58 +44,56 @@ export async function renderCredits(root) {
 
         ${credits.length === 0
             ? `<p style="margin-top:10px;">No credits yet</p>`
-            : credits
-                .map((c, i) => `
+            : credits.map((c) => `
               <div class="credit-item" style="padding:12px 0; border-bottom:1px solid #f1f5f9;">
 
                 <div style="display:flex; justify-content:space-between;">
-                  <strong>${c.name}</strong>
+                  <strong>${c.customer || "Unknown Customer"}</strong>
                   <span>₱${Number(c.amount).toFixed(2)}</span>
                 </div>
 
                 <div style="font-size:13px; color:#64748b; margin-top:4px;">
-                  ${c.desc}
+                  ${c.desc || ""}
                 </div>
 
                 <div style="display:flex; justify-content:space-between; margin-top:8px; font-size:12px; color:#94a3b8;">
-                  <span>${c.date}</span>
+                  <span>${c.dueDate}</span>
 
-                  <!-- FIXED BUTTON (NO CLASS CONFLICT) -->
-                  <button 
-                    class="credit-delete-btn"
-                    data-id="${i}">
+                  <button class="credit-delete-btn" data-id="${c.id}">
                     Delete
                   </button>
                 </div>
 
               </div>
-            `)
-                .join("")}
+            `).join("")}
       </div>
     `;
         attachEvents();
     };
     const attachEvents = () => {
         const form = document.getElementById("credit-form");
-        form.onsubmit = (e) => {
+        form.onsubmit = async (e) => {
             e.preventDefault();
-            credits.push({
-                name: document.getElementById("name").value,
-                desc: document.getElementById("desc").value,
-                amount: Number(document.getElementById("amount").value),
-                date: document.getElementById("date").value,
+            const name = document.getElementById("name").value;
+            const desc = document.getElementById("desc").value;
+            const amount = Number(document.getElementById("amount").value);
+            const date = document.getElementById("date").value;
+            await CreditService.create({
+                customerName: name,
+                desc: desc, // ✅ FIXED
+                amount,
+                dueDate: date,
             });
-            localStorage.setItem("credits", JSON.stringify(credits));
             render();
         };
-        document.querySelectorAll(".credit-delete-btn").forEach((btn) => {
-            btn.addEventListener("click", () => {
-                const id = Number(btn.dataset.id);
-                credits.splice(id, 1);
-                localStorage.setItem("credits", JSON.stringify(credits));
+        root.onclick = async (e) => {
+            const target = e.target;
+            if (target.classList.contains("credit-delete-btn")) {
+                const id = Number(target.dataset.id);
+                await CreditService.delete(id);
                 render();
-            });
-        });
+            }
+        };
     };
     render();
 }

@@ -45,9 +45,9 @@ export async function renderSales(root: HTMLElement) {
               ${
                 products.length === 0
                   ? `<option disabled>No products</option>`
-                  : products.map((p: any, i: number) => `
-                      <option value="${i}">
-                        ${p.name} (${p.stock})
+                  : products.map((p: any) => `
+                      <option value="${p.id}">
+                        ${p.name} (Stock: ${p.stock})
                       </option>
                     `).join("")
               }
@@ -74,7 +74,6 @@ export async function renderSales(root: HTMLElement) {
           </div>
         </div>
 
-        <!-- HEADER -->
         <div style="
           display:grid;
           grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
@@ -119,21 +118,27 @@ export async function renderSales(root: HTMLElement) {
   };
 
   const attach = () => {
-    document.getElementById("sale-form")!.addEventListener("submit", async (e) => {
-      e.preventDefault();
+    document.getElementById("sale-form")!
+      .addEventListener("submit", async (e) => {
+        e.preventDefault();
 
-      const productIndex = Number(
-        (document.getElementById("product") as HTMLSelectElement).value
-      );
+        const productId = Number(
+          (document.getElementById("product") as HTMLSelectElement).value
+        );
 
-      const qty = Number(
-        (document.getElementById("qty") as HTMLInputElement).value
-      );
+        const qty = Number(
+          (document.getElementById("qty") as HTMLInputElement).value
+        );
 
-      await SalesService.record(productIndex, qty);
+        if (!qty || qty <= 0) {
+          alert("Invalid quantity");
+          return;
+        }
 
-      render();
-    });
+        await SalesService.record(productId, qty);
+
+        await render();
+      });
 
     document.getElementById("dateFilter")?.addEventListener("change", (e: any) => {
       filteredDate = e.target.value;

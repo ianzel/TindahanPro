@@ -1,22 +1,22 @@
-import { Controller, Get, Post, Body, Patch, Param } from '@nestjs/common';
+import { Body, Controller, Get, Post, Delete, Param } from '@nestjs/common';
 import { CreditsService } from './credits.service';
 
 @Controller('credits')
 export class CreditsController {
-  constructor(private readonly service: CreditsService) {}
-
-  @Get()
-  findAll() {
-    return this.service.findAll();
-  }
+  constructor(private readonly creditsService: CreditsService) {}
 
   @Post()
   create(@Body() data: any) {
-    return this.service.create(data);
+    return this.creditsService.create(data);
   }
 
-  @Patch(':id/pay')
-  pay(@Param('id') id: number) {
-    return this.service.markPaid(Number(id));
+  @Get()
+  findAll() {
+    return this.creditsService.findAll();
+  }
+
+  @Delete(':id')
+  remove(@Param('id') id: string) {
+    return this.creditsService.remove(Number(id));
   }
 }

@@ -1,28 +1,59 @@
-const KEY = "products";
+const API = "http://localhost:3000/products";
 
 export class ProductService {
+
+  // 🔥 GET FROM DATABASE (NO CACHE)
   static async list() {
-    return JSON.parse(localStorage.getItem(KEY) || "[]");
+    const res = await fetch(API, {
+      cache: "no-store", // ✅ FIX 304
+    });
+
+    const data = await res.json();
+
+    return data.map((p: any) => ({
+      id: p.id,
+      name: p.name,
+      category: p.category,
+      buyPrice: Number(p.buyingPrice),
+      sellPrice: Number(p.sellingPrice),
+      stock: p.stock,
+      minStock: p.minStock,
+    }));
   }
 
+  // 🔥 CREATE (SAVE TO DB)
   static async create(data: any) {
-    const products = await this.list();
+    const res = await fetch(API, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        name: data.name,
+        category: data.category,
+        buyingPrice: data.buyPrice,
+        sellingPrice: data.sellPrice,
+        stock: data.stock,
+        minStock: data.minStock,
+      }),
+    });
 
-    const newProduct = {
-      name: data.name,
-      stock: Number(data.stock),
-      sell: Number(data.sell),
-      buy: Number(data.buy),
-    };
+    // 🔴 DEBUG (IMPORTANT)
+    console.log("CREATE STATUS:", res.status);
 
-    products.push(newProduct);
+    return res.json();
+  }
 
-    localStorage.setItem(KEY, JSON.stringify(products));
+  // 🔥 DELETE
+  static async delete(id: number) {
+    const res = await fetch(`${API}/${id}`, {
+      method: "DELETE",
+    });
 
-    return newProduct;
+    console.log("DELETE STATUS:", res.status);
   }
 
   static async save(products: any[]) {
-    localStorage.setItem(KEY, JSON.stringify(products));
+    console.warn("save() deprecated");
   }
 }

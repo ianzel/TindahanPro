@@ -1,0 +1,20 @@
+* [33m4af7efa[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m fix: sales and product bugs + UI improvements
+* [33mc53361c[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m fixed color of the profile buttons and clickable
+* [33mf701d3d[m show the charts and graph
+* [33mae3b6ea[m Fixed the profile menu, edit profile, and buttons
+* [33m636ff4a[m connect the login and register to jwt and password is hashed
+* [33m101c179[m Enhance the supplier design
+* [33m3808783[m Enhnace deisgn of credits
+* [33m9ff61f3[m Fixed Sales
+* [33m6889719[m Fixed Products
+* [33m3a121bf[m Add min stock
+* [33md726c6f[m More categories
+* [33m73213a7[m Fixed darkmode
+* [33m1d96cc7[m Upgraded UI fo login and register
+* [33m6c22304[m Add new actions
+* [33m6bfd37f[m Fixing the Layout
+* [33m81f1a08[m Updated UI
+* [33m95b06f6[m Updated UI
+* [33m37d96b3[m Updated UI: removed header title and resized pie chart
+* [33mcc6e742[m Updated UI: removed header title and resized pie chart
+* [33mf82a1d3[m UI improvements + product fix + profile modal

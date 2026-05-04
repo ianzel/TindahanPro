@@ -1,21 +1,49 @@
-const KEY = "products";
+const API = "http://localhost:3000/products";
 export class ProductService {
+    // 🔥 GET FROM DATABASE (NO CACHE)
     static async list() {
-        return JSON.parse(localStorage.getItem(KEY) || "[]");
+        const res = await fetch(API, {
+            cache: "no-store", // ✅ FIX 304
+        });
+        const data = await res.json();
+        return data.map((p) => ({
+            id: p.id,
+            name: p.name,
+            category: p.category,
+            buyPrice: Number(p.buyingPrice),
+            sellPrice: Number(p.sellingPrice),
+            stock: p.stock,
+            minStock: p.minStock,
+        }));
     }
+    // 🔥 CREATE (SAVE TO DB)
     static async create(data) {
-        const products = await this.list();
-        const newProduct = {
-            name: data.name,
-            stock: Number(data.stock),
-            sell: Number(data.sell),
-            buy: Number(data.buy),
-        };
-        products.push(newProduct);
-        localStorage.setItem(KEY, JSON.stringify(products));
-        return newProduct;
+        const res = await fetch(API, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                name: data.name,
+                category: data.category,
+                buyingPrice: data.buyPrice,
+                sellingPrice: data.sellPrice,
+                stock: data.stock,
+                minStock: data.minStock,
+            }),
+        });
+        // 🔴 DEBUG (IMPORTANT)
+        console.log("CREATE STATUS:", res.status);
+        return res.json();
+    }
+    // 🔥 DELETE
+    static async delete(id) {
+        const res = await fetch(`${API}/${id}`, {
+            method: "DELETE",
+        });
+        console.log("DELETE STATUS:", res.status);
     }
     static async save(products) {
-        localStorage.setItem(KEY, JSON.stringify(products));
+        console.warn("save() deprecated");
     }
 }

@@ -36,9 +36,9 @@ export async function renderSales(root) {
             <select id="product">
               ${products.length === 0
             ? `<option disabled>No products</option>`
-            : products.map((p, i) => `
-                      <option value="${i}">
-                        ${p.name} (${p.stock})
+            : products.map((p) => `
+                      <option value="${p.id}">
+                        ${p.name} (Stock: ${p.stock})
                       </option>
                     `).join("")}
             </select>
@@ -64,7 +64,6 @@ export async function renderSales(root) {
           </div>
         </div>
 
-        <!-- HEADER -->
         <div style="
           display:grid;
           grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
@@ -105,12 +104,17 @@ export async function renderSales(root) {
         attach();
     };
     const attach = () => {
-        document.getElementById("sale-form").addEventListener("submit", async (e) => {
+        document.getElementById("sale-form")
+            .addEventListener("submit", async (e) => {
             e.preventDefault();
-            const productIndex = Number(document.getElementById("product").value);
+            const productId = Number(document.getElementById("product").value);
             const qty = Number(document.getElementById("qty").value);
-            await SalesService.record(productIndex, qty);
-            render();
+            if (!qty || qty <= 0) {
+                alert("Invalid quantity");
+                return;
+            }
+            await SalesService.record(productId, qty);
+            await render();
         });
         document.getElementById("dateFilter")?.addEventListener("change", (e) => {
             filteredDate = e.target.value;

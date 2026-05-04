@@ -9,6 +9,9 @@ export class Sale {
   productId!: number;
 
   @Column()
+  productName!: string;
+
+  @Column()
   quantity!: number;
 
   @Column('decimal', { precision: 10, scale: 2 })
@@ -23,9 +26,6 @@ export class Sale {
   @Column('decimal', { precision: 10, scale: 2 })
   profit!: number;
 
-  @CreateDateColumn({ type: 'datetime' })
-  dateISO!: Date;
-
-  @Column({ nullable: true })
-  productName?: string;
+  @CreateDateColumn()
+  created_at!: Date;
 }

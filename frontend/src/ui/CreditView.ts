@@ -1,12 +1,19 @@
-export async function renderCredits(root: HTMLElement) {
-  let credits = JSON.parse(localStorage.getItem("credits") || "[]");
+import { CreditService } from "../services/CreditService.js";
 
-  const render = () => {
+export async function renderCredits(root: HTMLElement) {
+  let credits: any[] = [];
+
+  const loadCredits = async () => {
+    credits = await CreditService.list();
+  };
+
+  const render = async () => {
+    await loadCredits();
+
     root.innerHTML = `
       <div class="card">
         <h2>Credit Management</h2>
 
-        <!-- ADD CREDIT -->
         <form id="credit-form" class="horizontal-form"
           style="flex-direction: column; align-items: stretch; gap: 12px;">
 
@@ -17,7 +24,7 @@ export async function renderCredits(root: HTMLElement) {
 
           <div class="field">
             <label>Description</label>
-            <input id="desc" required />
+            <input id="desc" />
           </div>
 
           <div class="field">
@@ -42,35 +49,28 @@ export async function renderCredits(root: HTMLElement) {
         ${
           credits.length === 0
             ? `<p style="margin-top:10px;">No credits yet</p>`
-            : credits
-                .map(
-                  (c: any, i: number) => `
+            : credits.map((c: any) => `
               <div class="credit-item" style="padding:12px 0; border-bottom:1px solid #f1f5f9;">
 
                 <div style="display:flex; justify-content:space-between;">
-                  <strong>${c.name}</strong>
+                  <strong>${c.customer || "Unknown Customer"}</strong>
                   <span>₱${Number(c.amount).toFixed(2)}</span>
                 </div>
 
                 <div style="font-size:13px; color:#64748b; margin-top:4px;">
-                  ${c.desc}
+                  ${c.desc || ""}
                 </div>
 
                 <div style="display:flex; justify-content:space-between; margin-top:8px; font-size:12px; color:#94a3b8;">
-                  <span>${c.date}</span>
+                  <span>${c.dueDate}</span>
 
-                  <!-- FIXED BUTTON (NO CLASS CONFLICT) -->
-                  <button 
-                    class="credit-delete-btn"
-                    data-id="${i}">
+                  <button class="credit-delete-btn" data-id="${c.id}">
                     Delete
                   </button>
                 </div>
 
               </div>
-            `
-                )
-                .join("")
+            `).join("")
         }
       </div>
     `;
@@ -81,28 +81,35 @@ export async function renderCredits(root: HTMLElement) {
   const attachEvents = () => {
     const form = document.getElementById("credit-form") as HTMLFormElement;
 
-    form.onsubmit = (e) => {
+    form.onsubmit = async (e) => {
       e.preventDefault();
 
-      credits.push({
-        name: (document.getElementById("name") as HTMLInputElement).value,
-        desc: (document.getElementById("desc") as HTMLInputElement).value,
-        amount: Number((document.getElementById("amount") as HTMLInputElement).value),
-        date: (document.getElementById("date") as HTMLInputElement).value,
+      const name = (document.getElementById("name") as HTMLInputElement).value;
+      const desc = (document.getElementById("desc") as HTMLInputElement).value;
+      const amount = Number((document.getElementById("amount") as HTMLInputElement).value);
+      const date = (document.getElementById("date") as HTMLInputElement).value;
+
+      await CreditService.create({
+        customerName: name,
+        desc: desc, // ✅ FIXED
+        amount,
+        dueDate: date,
       });
 
-      localStorage.setItem("credits", JSON.stringify(credits));
       render();
     };
 
-    document.querySelectorAll(".credit-delete-btn").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const id = Number((btn as HTMLElement).dataset.id);
-        credits.splice(id, 1);
-        localStorage.setItem("credits", JSON.stringify(credits));
+    root.onclick = async (e) => {
+      const target = e.target as HTMLElement;
+
+      if (target.classList.contains("credit-delete-btn")) {
+        const id = Number(target.dataset.id);
+
+        await CreditService.delete(id);
+
         render();
-      });
-    });
+      }
+    };
   };
 
   render();
