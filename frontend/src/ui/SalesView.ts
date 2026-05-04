@@ -19,11 +19,21 @@ export async function renderSales(root: HTMLElement) {
     sales = data.sales;
   };
 
+  // 🔥 SAFE DATE PARSER (FIX INVALID DATE ISSUE)
+  const getSafeDate = (s: any) => {
+    const raw = s.created_at || s.dateISO || s.date;
+    const d = new Date(raw);
+    return isNaN(d.getTime()) ? null : d;
+  };
+
   const getFiltered = () => {
     if (!filteredDate) return sales;
 
     return sales.filter((s: any) => {
-      const d = new Date(s.dateISO).toISOString().split("T")[0];
+      const date = getSafeDate(s);
+      if (!date) return false;
+
+      const d = date.toISOString().split("T")[0];
       return d === filteredDate;
     });
   };
@@ -92,7 +102,10 @@ export async function renderSales(root: HTMLElement) {
         ${
           filtered.length === 0
             ? `<p style="margin-top:10px;">No sales</p>`
-            : filtered.map((s: any) => `
+            : filtered.map((s: any) => {
+                const date = getSafeDate(s);
+
+                return `
                 <div style="
                   display:grid;
                   grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
@@ -105,10 +118,11 @@ export async function renderSales(root: HTMLElement) {
                   <span>₱${s.unitPrice}</span>
                   <span>₱${s.totalAmount}</span>
                   <span style="text-align:right;">
-                    ${new Date(s.dateISO).toLocaleDateString()}
+                    ${date ? date.toLocaleDateString() : "Invalid Date"}
                   </span>
                 </div>
-              `).join("")
+              `;
+              }).join("")
         }
 
       </div>

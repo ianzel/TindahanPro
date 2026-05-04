@@ -5,6 +5,13 @@ let reportChart: any = null;
 export async function renderReports(root: HTMLElement) {
   const sales = await ReportService.getAllSales();
 
+  /* ================= SAFE DATE ================= */
+  const getSafeDate = (s: any) => {
+    const raw = s.created_at || s.dateISO || s.date;
+    const d = new Date(raw);
+    return isNaN(d.getTime()) ? null : d;
+  };
+
   root.innerHTML = `
     <div class="filter-bar">
       <h2>Reports</h2>
@@ -16,50 +23,52 @@ export async function renderReports(root: HTMLElement) {
       </select>
     </div>
 
-    <!-- CONNECTED STATS -->
     <div class="stats-row" id="report-stats"></div>
 
-    <!-- CONNECTED CHART -->
     <div class="card">
       <h3>Sales & Profit Overview</h3>
       <canvas id="reportChart"></canvas>
     </div>
   `;
 
-  /* ===== FILTER ===== */
+  /* ================= FILTER ================= */
   function filterSales(type: string) {
     const now = new Date();
 
-    if (type === "today") {
-      return sales.filter((s: any) =>
-        new Date(s.dateISO).toDateString() === now.toDateString()
-      );
-    }
+    return sales.filter((s: any) => {
+      const date = getSafeDate(s);
 
-    if (type === "week") {
-      const d = new Date();
-      d.setDate(now.getDate() - 7);
-      return sales.filter((s: any) => new Date(s.dateISO) >= d);
-    }
+      if (!date) return false;
 
-    if (type === "month") {
-      const d = new Date();
-      d.setMonth(now.getMonth() - 1);
-      return sales.filter((s: any) => new Date(s.dateISO) >= d);
-    }
+      if (type === "today") {
+        return date.toDateString() === now.toDateString();
+      }
 
-    return sales;
+      if (type === "week") {
+        const d = new Date();
+        d.setDate(now.getDate() - 7);
+        return date.getTime() >= d.getTime();
+      }
+
+      if (type === "month") {
+        const d = new Date();
+        d.setMonth(now.getMonth() - 1);
+        return date.getTime() >= d.getTime();
+      }
+
+      return true;
+    });
   }
 
-  /* ===== STATS ===== */
+  /* ================= STATS ================= */
   function renderStats(filtered: any[]) {
     const totalSales = filtered.reduce(
-      (sum: number, s: any) => sum + Number(s.totalAmount),
+      (sum: number, s: any) => sum + Number(s.totalAmount || 0),
       0
     );
 
     const totalProfit = filtered.reduce(
-      (sum: number, s: any) => sum + Number(s.profit),
+      (sum: number, s: any) => sum + Number(s.profit || 0),
       0
     );
 
@@ -83,7 +92,7 @@ export async function renderReports(root: HTMLElement) {
     `;
   }
 
-  /* ===== CHART ===== */
+  /* ================= CHART ================= */
   function drawChart(filtered: any[]) {
     const ChartJS = (window as any).Chart;
     if (!ChartJS) return;
@@ -91,12 +100,12 @@ export async function renderReports(root: HTMLElement) {
     if (reportChart) reportChart.destroy();
 
     const totalSales = filtered.reduce(
-      (sum: number, s: any) => sum + Number(s.totalAmount),
+      (sum: number, s: any) => sum + Number(s.totalAmount || 0),
       0
     );
 
     const totalProfit = filtered.reduce(
-      (sum: number, s: any) => sum + Number(s.profit),
+      (sum: number, s: any) => sum + Number(s.profit || 0),
       0
     );
 
@@ -121,11 +130,12 @@ export async function renderReports(root: HTMLElement) {
     }
   }
 
-  /* ===== INIT ===== */
+  /* ================= UPDATE ================= */
   const filter = document.getElementById("report-filter") as HTMLSelectElement;
 
   function update(type: string) {
     const filtered = filterSales(type);
+
     renderStats(filtered);
     drawChart(filtered);
   }
@@ -134,5 +144,6 @@ export async function renderReports(root: HTMLElement) {
     update(filter.value);
   });
 
+  /* ================= INIT ================= */
   update("today");
 }

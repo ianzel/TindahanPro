@@ -2,6 +2,12 @@ import { ReportService } from "../services/ReportService.js";
 let reportChart = null;
 export async function renderReports(root) {
     const sales = await ReportService.getAllSales();
+    /* ================= SAFE DATE ================= */
+    const getSafeDate = (s) => {
+        const raw = s.created_at || s.dateISO || s.date;
+        const d = new Date(raw);
+        return isNaN(d.getTime()) ? null : d;
+    };
     root.innerHTML = `
     <div class="filter-bar">
       <h2>Reports</h2>
@@ -13,37 +19,40 @@ export async function renderReports(root) {
       </select>
     </div>
 
-    <!-- CONNECTED STATS -->
     <div class="stats-row" id="report-stats"></div>
 
-    <!-- CONNECTED CHART -->
     <div class="card">
       <h3>Sales & Profit Overview</h3>
       <canvas id="reportChart"></canvas>
     </div>
   `;
-    /* ===== FILTER ===== */
+    /* ================= FILTER ================= */
     function filterSales(type) {
         const now = new Date();
-        if (type === "today") {
-            return sales.filter((s) => new Date(s.dateISO).toDateString() === now.toDateString());
-        }
-        if (type === "week") {
-            const d = new Date();
-            d.setDate(now.getDate() - 7);
-            return sales.filter((s) => new Date(s.dateISO) >= d);
-        }
-        if (type === "month") {
-            const d = new Date();
-            d.setMonth(now.getMonth() - 1);
-            return sales.filter((s) => new Date(s.dateISO) >= d);
-        }
-        return sales;
+        return sales.filter((s) => {
+            const date = getSafeDate(s);
+            if (!date)
+                return false;
+            if (type === "today") {
+                return date.toDateString() === now.toDateString();
+            }
+            if (type === "week") {
+                const d = new Date();
+                d.setDate(now.getDate() - 7);
+                return date.getTime() >= d.getTime();
+            }
+            if (type === "month") {
+                const d = new Date();
+                d.setMonth(now.getMonth() - 1);
+                return date.getTime() >= d.getTime();
+            }
+            return true;
+        });
     }
-    /* ===== STATS ===== */
+    /* ================= STATS ================= */
     function renderStats(filtered) {
-        const totalSales = filtered.reduce((sum, s) => sum + Number(s.totalAmount), 0);
-        const totalProfit = filtered.reduce((sum, s) => sum + Number(s.profit), 0);
+        const totalSales = filtered.reduce((sum, s) => sum + Number(s.totalAmount || 0), 0);
+        const totalProfit = filtered.reduce((sum, s) => sum + Number(s.profit || 0), 0);
         const statsEl = document.getElementById("report-stats");
         statsEl.innerHTML = `
       <div class="stat-card blue">
@@ -62,15 +71,15 @@ export async function renderReports(root) {
       </div>
     `;
     }
-    /* ===== CHART ===== */
+    /* ================= CHART ================= */
     function drawChart(filtered) {
         const ChartJS = window.Chart;
         if (!ChartJS)
             return;
         if (reportChart)
             reportChart.destroy();
-        const totalSales = filtered.reduce((sum, s) => sum + Number(s.totalAmount), 0);
-        const totalProfit = filtered.reduce((sum, s) => sum + Number(s.profit), 0);
+        const totalSales = filtered.reduce((sum, s) => sum + Number(s.totalAmount || 0), 0);
+        const totalProfit = filtered.reduce((sum, s) => sum + Number(s.profit || 0), 0);
         const ctx = document.getElementById("reportChart");
         if (ctx) {
             reportChart = new ChartJS(ctx, {
@@ -90,7 +99,7 @@ export async function renderReports(root) {
             });
         }
     }
-    /* ===== INIT ===== */
+    /* ================= UPDATE ================= */
     const filter = document.getElementById("report-filter");
     function update(type) {
         const filtered = filterSales(type);
@@ -100,5 +109,6 @@ export async function renderReports(root) {
     filter.addEventListener("change", () => {
         update(filter.value);
     });
+    /* ================= INIT ================= */
     update("today");
 }

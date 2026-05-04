@@ -14,11 +14,20 @@ export async function renderSales(root) {
         products = data.products;
         sales = data.sales;
     };
+    // 🔥 SAFE DATE PARSER (FIX INVALID DATE ISSUE)
+    const getSafeDate = (s) => {
+        const raw = s.created_at || s.dateISO || s.date;
+        const d = new Date(raw);
+        return isNaN(d.getTime()) ? null : d;
+    };
     const getFiltered = () => {
         if (!filteredDate)
             return sales;
         return sales.filter((s) => {
-            const d = new Date(s.dateISO).toISOString().split("T")[0];
+            const date = getSafeDate(s);
+            if (!date)
+                return false;
+            const d = date.toISOString().split("T")[0];
             return d === filteredDate;
         });
     };
@@ -81,7 +90,9 @@ export async function renderSales(root) {
 
         ${filtered.length === 0
             ? `<p style="margin-top:10px;">No sales</p>`
-            : filtered.map((s) => `
+            : filtered.map((s) => {
+                const date = getSafeDate(s);
+                return `
                 <div style="
                   display:grid;
                   grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
@@ -94,10 +105,11 @@ export async function renderSales(root) {
                   <span>₱${s.unitPrice}</span>
                   <span>₱${s.totalAmount}</span>
                   <span style="text-align:right;">
-                    ${new Date(s.dateISO).toLocaleDateString()}
+                    ${date ? date.toLocaleDateString() : "Invalid Date"}
                   </span>
                 </div>
-              `).join("")}
+              `;
+            }).join("")}
 
       </div>
     `;
