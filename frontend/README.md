@@ -1,10 +1,11 @@
+````md
 # TindahanPro
 
-TindahanPro is a full-stack web-based Sari-Sari Store Management System designed to help small business owners manage inventory, sales transactions, profit tracking, supplier information, and customer credit (“utang”) efficiently.
+TindahanPro is a full-stack web-based Sari-Sari Store Management System designed to help small business owners manage inventory, sales transactions, supplier information, and customer credit (“utang”) efficiently.
 
 The system focuses on improving daily store operations through digital record-keeping, automated financial computation, inventory monitoring, and business analytics.
 
-The frontend is built using TypeScript and Vite, while the backend is powered by NestJS, TypeORM, and MySQL.
+The frontend is built using React, TypeScript, and Chart.js, while the backend is powered by NestJS, TypeORM, and MySQL.
 
 ---
 
@@ -28,10 +29,10 @@ The system is designed to help manage:
 
 ## Frontend
 
+* React
 * TypeScript
-* Vite
 * Chart.js
-* Vanilla Web UI
+* Vanilla CSS
 
 ## Backend
 
@@ -48,21 +49,30 @@ The system is designed to help manage:
 TindahanPro/
 │
 ├── frontend/
-│   └── src/
-│       ├── services/
-│       ├── views/
-│       └── styles/
+│   ├── src/
+│   │   ├── services/
+│   │   ├── ui/
+│   │   ├── app.ts
+│   │   └── styles.css
+│   │
+│   ├── index.html
+│   ├── package.json
+│   └── tsconfig.json
 │
 ├── backend/
-│   └── src/
-│       ├── products/
-│       ├── sales/
-│       ├── suppliers/
-│       ├── credits/
-│       └── reports/
+│   ├── src/
+│   │   ├── auth/
+│   │   ├── products/
+│   │   ├── sales/
+│   │   ├── suppliers/
+│   │   ├── credits/
+│   │   └── reports/
+│   │
+│   ├── package.json
+│   └── tsconfig.json
 │
 └── README.md
-```
+````
 
 ---
 
@@ -202,6 +212,7 @@ Features include:
 * manage stock quantity
 * set selling price
 * set buying price
+* categorize products
 * low stock monitoring
 
 ---
@@ -264,7 +275,29 @@ Features include:
 
 ---
 
+# Authentication System
+
+The system includes JWT-based authentication using the NestJS backend.
+
+Features include:
+
+* user registration
+* user login
+* JWT token authentication
+* protected API access
+* persistent login session
+* logout functionality
+
+---
+
 # Current Backend API Routes
+
+## Authentication
+
+```txt
+POST /auth/register
+POST /auth/login
+```
 
 ## Products
 
@@ -319,7 +352,7 @@ This helps store owners avoid inventory shortages.
 
 ## Profit Calculator
 
-The system computes profits automatically based on product cost and selling price.
+The system computes profits automatically based on product buying price and selling price.
 
 This allows easier financial monitoring and business analysis.
 
@@ -366,7 +399,6 @@ The recommended development order for the system is:
 4. Suppliers
 5. Credits
 6. Reports
-7. Analytics Improvements
 
 ---
 
@@ -374,15 +406,11 @@ The recommended development order for the system is:
 
 Possible future enhancements include:
 
-* user authentication and login
 * printable receipts
 * export reports to PDF or Excel
 * profile picture upload
-* notifications and alerts
+* dark mode improvements
 * customer management
-* barcode scanning
-* dark mode
-* sales receipt printing
 
 ---
 
@@ -392,14 +420,14 @@ Possible future enhancements include:
 
 ```bash
 cd frontend
-npm test
+npm run build
 ```
 
 ## Backend
 
 ```bash
 cd backend
-npm test
+npm run start:dev
 ```
 
 ---
@@ -415,6 +443,7 @@ http://localhost:3000
 * Chart.js is used for dashboard analytics.
 * The backend uses TypeORM with MySQL.
 * CORS is enabled in the NestJS backend.
+* JWT authentication is used for login security.
 
 ---
 
@@ -428,8 +457,9 @@ This project demonstrates:
 * sales transaction processing
 * profit analysis
 * dashboard analytics
-* TypeScript frontend development
+* React and TypeScript frontend development
 * NestJS backend development
 * MySQL database integration
+* JWT authentication implementation
 
 The system is designed around real-world sari-sari store operations and provides a practical business management solution for small retail stores.
