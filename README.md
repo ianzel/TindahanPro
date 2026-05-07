@@ -1,7 +1,3 @@
-Here is a **clean, formal, text-only project specification** for submission or documentation.
-
----
-
 # **TindahanPro – Sari-Sari Store Management System**
 
 *(Small Business Finance & Inventory Focus)*
